@@ -1,2 +1,2 @@
-# VulnScope
+# AVAP
 Automated Vulnerability Assessment Platform
