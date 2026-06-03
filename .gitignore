@@ -1,0 +1,60 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# .gitignore — Vulnerability Analysis Pipeline
+# ─────────────────────────────────────────────────────────────────────────────
+
+# ── Reportes generados ────────────────────────────────────────────────────────
+# Los reportes contienen datos de escaneos reales que pueden incluir
+# información sensible sobre la infraestructura analizada.
+# Cada desarrollador genera sus propios reportes localmente.
+reports/
+
+# ── Python ────────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# ── Entornos virtuales ────────────────────────────────────────────────────────
+venv/
+env/
+.venv/
+.env/
+ENV/
+
+# ── Variables de entorno ──────────────────────────────────────────────────────
+# NUNCA commitear credenciales o configuración sensible.
+.env
+.env.local
+.env.*.local
+*.env
+
+# ── IDEs ──────────────────────────────────────────────────────────────────────
+.vscode/settings.json
+.idea/
+*.swp
+*.swo
+*~
+
+# ── Sistema operativo ─────────────────────────────────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# ── Logs ──────────────────────────────────────────────────────────────────────
+*.log
+logs/
+
+# ── Archivos temporales ───────────────────────────────────────────────────────
+*.tmp
+*.temp
+.cache/
