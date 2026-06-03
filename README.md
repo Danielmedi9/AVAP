@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # 🔐 Vulnerability Analysis Pipeline
 
 <div align="center">
@@ -588,3 +589,7 @@ Built as a **DevSecOps portfolio project** demonstrating:
 *Vulnerability Analysis Pipeline · Nmap + Trivy + OWASP ZAP · DevSecOps*
 
 </div>
+=======
+# AVAP
+Automated Vulnerability Assessment Platform
+>>>>>>> 37e7264fb57b4c9b162a028ed98f834f7e11c9c4
