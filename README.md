@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # 🔐 Vulnerability Analysis Pipeline
 
 <div align="center">
