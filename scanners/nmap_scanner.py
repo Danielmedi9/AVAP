@@ -33,11 +33,11 @@ def run_nmap(report_dir: str, target: str = "juice-shop") -> bool:
             log_error("NMAP", f"El escaneo terminó con código de error {result.returncode}")
             return False
 
-        log_ok("NMAP", f"Escaneo completado → {output_path}")
+        log_ok("NMAP", f"Escaneo completado - {output_path}")
         return True
 
     except FileNotFoundError:
-        log_error("NMAP", "No se encontró el comando 'docker'. ¿Está instalado?")
+        log_error("NMAP", "No se encontró el comando 'docker'")
         return False
     except Exception as e:
         log_error("NMAP", f"Error inesperado: {e}")

@@ -37,7 +37,7 @@ def main():
 
     else:
         print("\n" + "═" * 56)
-        print("  ❌  ERROR: Debes especificar un objetivo")
+        print("     ERROR: Debes especificar un objetivo")
         print("═" * 56)
         print()
         print("  1) Escanear OWASP Juice Shop (entorno de prueba):")
@@ -58,7 +58,7 @@ def main():
     else:
         log("MAIN", "Modo target externo — sin Docker Compose")
 
-    log_section("WAIT — Comprobando disponibilidad del objetivo")
+    log_section("Comprobando disponibilidad del objetivo")
 
     if not wait_for_service(target_url, label="Target"):
         log_error("MAIN", f"El objetivo '{target_url}' no está disponible. Abortando.")
@@ -67,7 +67,7 @@ def main():
     report_dir = create_report_dir()
     log("MAIN", f"Guardando reportes en: {report_dir}")
 
-    log_section("SCAN — Ejecutando escáneres de seguridad")
+    log_section("Ejecutando escáneres de seguridad")
 
     run_nmap(report_dir, target=nmap_target)
     run_zap(report_dir, target_url=zap_target)
@@ -78,7 +78,7 @@ def main():
         log("MAIN", "Trivy omitido — modo target externo")
         _create_empty_trivy_report(report_dir)
 
-    log_section("PARSE — Procesando resultados")
+    log_section("Procesando resultados")
 
     data = {
         "nmap":  parse_nmap(os.path.join(report_dir, "nmap.txt")),
@@ -86,7 +86,7 @@ def main():
         "zap":   parse_zap(os.path.join(report_dir, "zap.json")),
     }
 
-    log_section("DASHBOARD — Generando reporte")
+    log_section("Generando reporte")
 
     dashboard_path = os.path.join(report_dir, "dashboard.html")
     success = generate_dashboard(data, dashboard_path)
@@ -102,7 +102,7 @@ def main():
         webbrowser.open(f"file://{abs_path}")
         log_ok("MAIN", "Dashboard abierto en el navegador")
 
-    log_section("PIPELINE COMPLETADO ✓")
+    log_section("PIPELINE COMPLETADO")
 
 
 def parse_arguments():
@@ -160,7 +160,7 @@ def _create_empty_trivy_report(report_dir: str):
 def print_banner(args, target_url: str, use_juice_shop: bool):
     mode = "Juice Shop (Docker)" if use_juice_shop else "Target externo"
     print("\n" + "═" * 56)
-    print("  🔐  VULNERABILITY ANALYSIS PIPELINE")
+    print("      VULNERABILITY ANALYSIS PIPELINE")
     print("═" * 56)
     print(f"  Modo   : {mode}")
     print(f"  Target : {target_url}")
@@ -175,7 +175,7 @@ def print_summary(data: dict, report_dir: str):
     nmap  = data["nmap"]["count"]
 
     print("\n" + "═" * 56)
-    print("  📊  RESUMEN DE HALLAZGOS")
+    print("      RESUMEN DE HALLAZGOS")
     print("═" * 56)
     print(f"  Puertos abiertos  : {nmap}")
     print(f"  CVEs Críticos     : {trivy.get('CRITICAL', 0)}")

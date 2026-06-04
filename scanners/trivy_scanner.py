@@ -40,7 +40,7 @@ def _run_trivy_scan(image: str, output_path: str, output_format: str) -> bool:
         return result.returncode == 0
 
     except FileNotFoundError:
-        log_error("TRIVY", "No se encontró el comando 'docker'. ¿Está instalado?")
+        log_error("TRIVY", "No se encontró el comando 'docker'")
         return False
     except Exception as e:
         log_error("TRIVY", f"Error inesperado: {e}")

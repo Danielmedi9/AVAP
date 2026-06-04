@@ -52,7 +52,7 @@ def run_zap(report_dir: str, target_url: str = "http://juice-shop:3000") -> bool
         return True
 
     except FileNotFoundError:
-        log_error("ZAP", "No se encontró el comando 'docker'. ¿Está instalado?")
+        log_error("ZAP", "No se encontró el comando 'docker'")
         _ensure_zap_json(report_dir)
         return False
     except Exception as e:

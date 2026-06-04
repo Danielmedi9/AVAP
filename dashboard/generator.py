@@ -30,7 +30,7 @@ def generate_dashboard(data: dict, output_path: str) -> bool:
         with open(output_path, "w", encoding="utf-8") as f:
             f.write(html)
 
-        log_ok("DASHBOARD", f"Dashboard profesional generado → {output_path}")
+        log_ok("DASHBOARD", f"Dashboard generado → {output_path}")
         return True
 
     except Exception as e:
@@ -1000,7 +1000,7 @@ def _build_html(timestamp, scoring, data, chart_data,
 <div class="header">
     <div class="header-left">
         <h1>Vulnerability Analysis Report</h1>
-        <div class="subtitle">Automated Security Pipeline · DevSecOps</div>
+        <div class="subtitle">Automated Security Analysis</div>
     </div>
     <div class="header-right">
         <div class="timestamp">Generated: {timestamp}</div>
@@ -1085,7 +1085,7 @@ def _build_html(timestamp, scoring, data, chart_data,
 </div>
 
 <div class="section">
-    <div class="section-title">Security Metrics — Visualizations</div>
+    <div class="section-title">Security Metrics</div>
 
     <div class="charts-grid">
 
@@ -1218,10 +1218,10 @@ def _build_html(timestamp, scoring, data, chart_data,
     </div>
 </div>
 
-</div><!-- /main -->
+</div>
 
 <div class="footer">
-    <span>Vulnerability Analysis Pipeline · {timestamp}</span>
+    <span>Vulnerability Analysis · {timestamp}</span>
     <div class="footer-links">
         <a href="https://nmap.org" target="_blank">Nmap</a>
         <a href="https://trivy.dev" target="_blank">Trivy</a>
@@ -1274,7 +1274,6 @@ new Chart(document.getElementById('trivyDonut'), {{
             }},
             tooltip: {{
                 callbacks: {{
-                    // Personalizamos el tooltip para mostrar el porcentaje.
                     label: function(ctx) {{
                         const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
                         const pct = total > 0 ? Math.round(ctx.parsed / total * 100) : 0;
@@ -1392,7 +1391,7 @@ function filterTable(tableId, query) {{
     }});
 }}
 
-let activeFilters = {{}};  // Guardamos qué filtros están activos por tabla.
+let activeFilters = {{}};
 
 function filterBySeverity(tableId, severity, btn) {{
     const table = document.getElementById(tableId);

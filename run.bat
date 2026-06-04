@@ -1,23 +1,13 @@
 @echo off
-REM run.bat
-REM ─────────────────────────────────────────────────────────────────────────────
-REM SCRIPT DE ARRANQUE — Windows (CMD)
-REM ─────────────────────────────────────────────────────────────────────────────
-REM Uso:
-REM   run.bat                          → menú interactivo
-REM   run.bat --juice-shop             → Juice Shop directamente
-REM   run.bat --target http://mi-app.com  → target externo directamente
-REM ─────────────────────────────────────────────────────────────────────────────
 
 setlocal enabledelayedexpansion
 
 echo.
 echo ════════════════════════════════════════════════════
-echo   🔐  VULNERABILITY ANALYSIS PIPELINE
+echo          VULNERABILITY ANALYSIS PIPELINE
 echo ════════════════════════════════════════════════════
 echo.
 
-REM ── 1. Comprobar Python ──────────────────────────────────────────────────────
 python --version >nul 2>&1
 if errorlevel 1 (
     echo [ERROR] Python no encontrado.
@@ -28,7 +18,6 @@ if errorlevel 1 (
 )
 for /f "tokens=*" %%i in ('python --version') do echo [OK] %%i encontrado
 
-REM ── 2. Comprobar Docker ──────────────────────────────────────────────────────
 docker info >nul 2>&1
 if errorlevel 1 (
     echo [ERROR] Docker no esta activo.
@@ -38,18 +27,15 @@ if errorlevel 1 (
 )
 echo [OK] Docker activo
 
-REM ── 3. Crear entorno virtual si no existe ────────────────────────────────────
 if not exist "venv\" (
     echo [INFO] Creando entorno virtual...
     python -m venv venv
     echo [OK] Entorno virtual creado
 )
 
-REM ── 4. Activar entorno virtual ───────────────────────────────────────────────
 call venv\Scripts\activate.bat
 echo [OK] Entorno virtual activado
 
-REM ── 5. Instalar dependencias ─────────────────────────────────────────────────
 echo [INFO] Instalando dependencias...
 pip install -q --upgrade pip
 pip install -q -r requirements.txt
@@ -59,22 +45,13 @@ echo.
 echo ════════════════════════════════════════════════════
 echo.
 
-REM ── 6. Determinar modo de ejecución ──────────────────────────────────────────
-REM
-REM Si el usuario pasó argumentos (ej: run.bat --juice-shop),
-REM los pasamos directamente a Python sin preguntar nada.
-REM
-REM Si no pasó argumentos, mostramos el menú interactivo.
-
 if not "%~1"=="" (
-    REM El usuario pasó argumentos → los usamos directamente
     echo [INFO] Ejecutando con argumentos: %*
     echo.
     python main.py %*
     goto :end
 )
 
-REM ── Menú interactivo ─────────────────────────────────────────────────────────
 echo   Que quieres escanear?
 echo.
 echo   1) OWASP Juice Shop (entorno de prueba Docker)
@@ -97,7 +74,6 @@ if "%OPCION%"=="3" goto :salir
 echo [ERROR] Opcion no valida. Ejecuta run.bat de nuevo.
 exit /b 1
 
-REM ── Opción 1: Juice Shop ─────────────────────────────────────────────────────
 :juice_shop
 echo [INFO] Modo: OWASP Juice Shop
 echo.
@@ -108,7 +84,6 @@ echo.
 python main.py --juice-shop %BROWSER_FLAG%
 goto :end
 
-REM ── Opción 2: Target externo ─────────────────────────────────────────────────
 :external_target
 echo [INFO] Modo: Target externo
 echo.
@@ -126,7 +101,6 @@ echo.
 python main.py --target "%TARGET_URL%" %BROWSER_FLAG%
 goto :end
 
-REM ── Opción 3: Salir ──────────────────────────────────────────────────────────
 :salir
 echo Saliendo.
 exit /b 0

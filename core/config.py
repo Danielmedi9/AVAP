@@ -1,7 +1,7 @@
 import subprocess
 import json
 
-DOCKER_NETWORK = "vuln-lab_default"
+DOCKER_NETWORK = "AVAP_default"
 DEFAULT_TARGET_CONTAINER = "juice-shop"
 DEFAULT_TARGET_URL = "http://localhost:3000"
 DEFAULT_TARGET_IMAGE = "bkimminich/juice-shop"

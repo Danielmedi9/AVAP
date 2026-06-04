@@ -1,65 +1,19 @@
-# .github/workflows/security-scan.yml
-# ─────────────────────────────────────────────────────────────────────────────
-# FASE 7 — DEVSECOPS: PIPELINE CI/CD CON GITHUB ACTIONS
-# ─────────────────────────────────────────────────────────────────────────────
-#
-# ¿Qué es GitHub Actions?
-# → Es el sistema de CI/CD integrado en GitHub.
-# → CI/CD = Continuous Integration / Continuous Delivery.
-# → Permite ejecutar código automáticamente cuando ocurre un evento
-#   (push, pull request, schedule, etc.)
-#
-# ¿Qué hace este workflow?
-# → Se ejecuta automáticamente en cada push a main/develop.
-# → También se puede lanzar manualmente desde la UI de GitHub.
-# → Levanta Juice Shop en Docker, ejecuta los tres escáneres,
-#   genera el dashboard y lo publica como artefacto descargable.
-#
-# ¿Por qué esto es valioso para DevSecOps?
-# → "Shift Left Security": detectamos vulnerabilidades ANTES de producción.
-# → Cada commit queda auditado con un reporte de seguridad.
-# → El equipo puede descargar el dashboard HTML directamente desde GitHub.
-# → Si hay CVEs críticos, el pipeline puede fallar y bloquear el merge.
-#
-# Estructura del workflow:
-# 1. job: security-scan
-#    ├── Checkout del código
-#    ├── Setup Python
-#    ├── Instalar dependencias
-#    ├── Levantar Juice Shop (Docker)
-#    ├── Esperar a que Juice Shop esté listo
-#    ├── Ejecutar Nmap
-#    ├── Ejecutar Trivy
-#    ├── Ejecutar OWASP ZAP
-#    ├── Parsear resultados y generar dashboard
-#    ├── Publicar dashboard como artefacto
-#    └── (Opcional) Fallar si hay CVEs críticos
-# ─────────────────────────────────────────────────────────────────────────────
+name: "Security Vulnerability Scan"
 
-name: "🔐 Security Vulnerability Scan"
-
-# ── Cuándo se ejecuta este workflow ──────────────────────────────────────────
 on:
-  # En cada push a las ramas principales.
   push:
     branches:
       - main
       - develop
       - "feature/**"
 
-  # En cada Pull Request hacia main.
-  # Esto es clave: detectamos vulnerabilidades ANTES de mergear.
   pull_request:
     branches:
       - main
 
-  # Ejecución programada: todos los lunes a las 08:00 UTC.
-  # Útil para detectar nuevas vulnerabilidades en dependencias existentes.
   schedule:
     - cron: "0 8 * * 1"
 
-  # Permite lanzar el workflow manualmente desde la UI de GitHub.
-  # Útil para análisis bajo demanda.
   workflow_dispatch:
     inputs:
       target_url:
@@ -67,77 +21,49 @@ on:
         required: false
         default: "http://localhost:3000"
 
-# ── Variables de entorno globales ─────────────────────────────────────────────
 env:
-  # Python version a usar en todos los jobs.
   PYTHON_VERSION: "3.11"
-  # Directorio donde se guardarán los reportes.
   REPORTS_DIR: "reports"
 
-# ── Jobs ──────────────────────────────────────────────────────────────────────
 jobs:
-
-  # ════════════════════════════════════════════════════════════════════════════
-  # JOB 1: SECURITY SCAN
-  # ════════════════════════════════════════════════════════════════════════════
   security-scan:
     name: "Security Vulnerability Analysis"
 
-    # Usamos Ubuntu porque Docker funciona nativamente en Linux.
-    # En Windows/Mac hay overhead adicional con Docker Desktop.
     runs-on: ubuntu-latest
 
-    # Permisos necesarios para publicar artefactos y comentar en PRs.
     permissions:
       contents: read
       pull-requests: write
 
-    # Timeout máximo del job: 60 minutos.
-    # ZAP puede tardar bastante; esto evita que el job corra indefinidamente.
     timeout-minutes: 60
 
     steps:
-
-      # ── PASO 1: Checkout del código ─────────────────────────────────────────
-      # Descarga el código del repositorio en el runner de GitHub Actions.
-      - name: "📥 Checkout repository"
+      - name: "Checkout repository"
         uses: actions/checkout@v4
 
-      # ── PASO 2: Setup Python ────────────────────────────────────────────────
-      # Instala la versión de Python especificada.
-      # cache: 'pip' → cachea las dependencias para acelerar ejecuciones futuras.
-      - name: "🐍 Setup Python ${{ env.PYTHON_VERSION }}"
+      - name: "Setup Python ${{ env.PYTHON_VERSION }}"
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: "pip"
 
-      # ── PASO 3: Instalar dependencias Python ────────────────────────────────
-      - name: "📦 Install Python dependencies"
+      - name: "Install Python dependencies"
         run: |
           python -m pip install --upgrade pip
           pip install requests
 
-      # ── PASO 4: Verificar Docker ────────────────────────────────────────────
-      # GitHub Actions ya tiene Docker instalado en ubuntu-latest.
-      # Solo verificamos que funciona correctamente.
-      - name: "🐳 Verify Docker installation"
+      - name: "Verify Docker installation"
         run: |
           docker --version
           docker compose version
 
-      # ── PASO 5: Levantar Juice Shop ─────────────────────────────────────────
-      # Levantamos el entorno vulnerable en background (-d = detached).
-      - name: "🧃 Start OWASP Juice Shop"
+      - name: "Start OWASP Juice Shop"
         run: |
           docker compose up -d
           echo "Juice Shop container started"
           docker ps
 
-      # ── PASO 6: Esperar a que Juice Shop esté listo ─────────────────────────
-      # Juice Shop tarda ~30 segundos en arrancar completamente.
-      # Usamos un bucle de espera con curl para verificar que responde HTTP 200.
-      - name: "⏳ Wait for Juice Shop to be ready"
+      - name: "Wait for Juice Shop to be ready"
         run: |
           echo "Waiting for Juice Shop at http://localhost:3000..."
           for i in $(seq 1 30); do
@@ -152,9 +78,7 @@ jobs:
           docker logs juice-shop
           exit 1
 
-      # ── PASO 7: Ejecutar Nmap ───────────────────────────────────────────────
-      # Creamos el directorio de reportes y ejecutamos Nmap.
-      - name: "🔍 Run Nmap port scan"
+      - name: "Run Nmap port scan"
         run: |
           mkdir -p ${{ env.REPORTS_DIR }}/ci
           docker run --rm \
@@ -165,9 +89,7 @@ jobs:
           echo "Nmap scan completed"
           cat ${{ env.REPORTS_DIR }}/ci/nmap.txt
 
-      # ── PASO 8: Ejecutar Trivy ──────────────────────────────────────────────
-      # Trivy analiza la imagen Docker de Juice Shop buscando CVEs.
-      - name: "🛡️ Run Trivy container scan"
+      - name: "Run Trivy container scan"
         run: |
           docker run --rm \
             -v /var/run/docker.sock:/var/run/docker.sock \
@@ -179,10 +101,7 @@ jobs:
             > ${{ env.REPORTS_DIR }}/ci/trivy.json 2>&1 || true
           echo "Trivy scan completed"
 
-      # ── PASO 9: Ejecutar OWASP ZAP ─────────────────────────────────────────
-      # ZAP hace un baseline scan de la aplicación web.
-      # continue-on-error: true porque ZAP devuelve código 2 cuando encuentra alertas.
-      - name: "🕷️ Run OWASP ZAP baseline scan"
+      - name: "Run OWASP ZAP baseline scan"
         continue-on-error: true
         run: |
           docker run --rm \
@@ -199,9 +118,7 @@ jobs:
             -x zap.xml || true
           echo "ZAP scan completed"
 
-      # ── PASO 10: Generar dashboard HTML ─────────────────────────────────────
-      # Usamos el script de Python para parsear los resultados y generar el dashboard.
-      - name: "📊 Generate security dashboard"
+      - name: "Generate security dashboard"
         run: |
           python - << 'EOF'
           import os, sys
@@ -224,12 +141,11 @@ jobs:
           success = generate_dashboard(data, dashboard_path)
 
           if success:
-              print(f"✓ Dashboard generated: {dashboard_path}")
+              print(f"Dashboard generated: {dashboard_path}")
           else:
-              print("✗ Dashboard generation failed")
+              print("Dashboard generation failed")
               sys.exit(1)
 
-          # Mostramos un resumen en los logs de GitHub Actions.
           trivy = data["trivy"]["counts"]
           zap   = data["zap"]["counts"]
           nmap  = data["nmap"]["count"]
@@ -245,8 +161,6 @@ jobs:
           print(f"Web Alerts Med:   {zap.get('Medium', 0)}")
           print("="*50)
 
-          # Guardamos las métricas como variables de entorno de GitHub Actions.
-          # Esto permite usarlas en pasos posteriores (ej: comentar en PR).
           with open(os.environ.get('GITHUB_ENV', '/dev/null'), 'a') as f:
               f.write(f"CRITICAL_CVES={trivy.get('CRITICAL', 0)}\n")
               f.write(f"HIGH_CVES={trivy.get('HIGH', 0)}\n")
@@ -254,9 +168,6 @@ jobs:
               f.write(f"OPEN_PORTS={nmap}\n")
           EOF
 
-      # ── PASO 11: Comentar en Pull Request ───────────────────────────────────
-      # Si el workflow se ejecuta en un PR, añadimos un comentario con el resumen.
-      # Esto es muy útil para que los revisores vean el estado de seguridad.
       - name: "💬 Comment security summary on PR"
         if: github.event_name == 'pull_request'
         uses: actions/github-script@v7
@@ -267,12 +178,11 @@ jobs:
             const zapHigh  = process.env.ZAP_HIGH || '0';
             const ports    = process.env.OPEN_PORTS || '0';
 
-            // Determinamos el emoji según el nivel de riesgo.
-            const riskEmoji = parseInt(critical) > 0 ? '🔴' :
+            const risk = parseInt(critical) > 0 ? '🔴' :
                               parseInt(high) > 5 ? '🟠' :
                               parseInt(zapHigh) > 0 ? '🟡' : '🟢';
 
-            const body = `## ${riskEmoji} Security Scan Results
+            const body = `## ${risk} Security Scan Results
 
             | Metric | Count |
             |--------|-------|
@@ -281,10 +191,10 @@ jobs:
             | 🟡 Web Alerts (High) | **${zapHigh}** |
             | 🌐 Open Ports | **${ports}** |
 
-            > 📊 Full dashboard available in the **Artifacts** section of this workflow run.
-            > 🔗 [View workflow run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+            > Full dashboard available in the **Artifacts** section of this workflow run.
+            > [View workflow run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
 
-            *Generated by Vulnerability Analysis Pipeline · Nmap + Trivy + OWASP ZAP*`;
+            *Generated by Vulnerability Analysis · Nmap + Trivy + OWASP ZAP*`;
 
             github.rest.issues.createComment({
               issue_number: context.issue.number,
@@ -293,12 +203,9 @@ jobs:
               body: body
             });
 
-      # ── PASO 12: Publicar artefactos ────────────────────────────────────────
-      # Los artefactos son archivos que GitHub Actions guarda y permite descargar.
-      # Aquí publicamos el dashboard HTML y todos los reportes raw.
-      - name: "📤 Upload security reports as artifacts"
+      - name: "Upload security reports as artifacts"
         uses: actions/upload-artifact@v4
-        if: always()  # Siempre publicamos, incluso si el job falla.
+        if: always()
         with:
           name: "security-reports-${{ github.run_number }}"
           path: |
@@ -307,24 +214,9 @@ jobs:
             reports/ci/trivy.json
             reports/ci/zap.json
             reports/ci/zap.html
-          # Retenemos los artefactos 30 días.
           retention-days: 30
 
-      # ── PASO 13: Fallar si hay CVEs críticos (opcional) ─────────────────────
-      # En un entorno de producción real, podríamos bloquear el merge
-      # si se detectan vulnerabilidades críticas.
-      # Está comentado para no bloquear el pipeline en este ejemplo.
-      #
-      # - name: "🚨 Fail if critical CVEs found"
-      #   run: |
-      #     if [ "${{ env.CRITICAL_CVES }}" -gt "0" ]; then
-      #       echo "CRITICAL: Found ${{ env.CRITICAL_CVES }} critical CVEs!"
-      #       echo "Pipeline blocked. Fix critical vulnerabilities before merging."
-      #       exit 1
-      #     fi
-
-      # ── PASO 14: Limpiar contenedores ───────────────────────────────────────
-      - name: "🧹 Cleanup Docker containers"
+      - name: "Cleanup Docker containers"
         if: always()
         run: |
           docker compose down --remove-orphans || true
