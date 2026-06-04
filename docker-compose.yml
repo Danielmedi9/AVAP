@@ -1,5 +1,4 @@
 services:
-
   juice-shop:
     image: bkimminich/juice-shop
     container_name: juice-shop
@@ -7,8 +6,8 @@ services:
       - "3000:3000"
     restart: unless-stopped
     networks:
-      - vuln-lab
+      - AVAP
 
 networks:
-  vuln-lab:
-    name: vuln-lab_default
+  AVAP:
+    name: AVAP_default
