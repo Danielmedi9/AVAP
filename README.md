@@ -1,4 +1,4 @@
-# 🔐 Vulnerability Analysis Pipeline
+#  Vulnerability Analysis Pipeline
 
 <div align="center">
 
@@ -16,7 +16,7 @@
 
 ---
 
-## 📋 Overview
+##  Overview
 
 This project is a **professional DevSecOps automation platform** that orchestrates multiple security scanning tools to provide comprehensive vulnerability analysis of Docker-based applications.
 
@@ -29,23 +29,23 @@ The pipeline automatically:
 
 ---
 
-## ✨ Features
+##  Features
 
 | Feature | Description |
 |---------|-------------|
-| 🔍 **Port Scanning** | Nmap full-port scan with service/version detection |
-| 🐳 **Container Analysis** | Trivy CVE scanning with CVSS score enrichment |
-| 🕷️ **Web Security** | OWASP ZAP baseline scan for OWASP Top 10 |
-| 📊 **Interactive Dashboard** | Chart.js visualizations, tabs, search & filters |
-| 🎯 **Risk Scoring** | Weighted 0-100 risk score with severity breakdown |
-| 🔗 **CVE Links** | Direct links to NVD for each CVE found |
-| 🤖 **CI/CD Integration** | GitHub Actions with PR comments and artifacts |
-| 🎛️ **Multi-target** | Scan any URL with `--target https://example.com` |
-| 📁 **Report History** | Timestamped reports — full audit trail |
+| **Port Scanning** | Nmap full-port scan with service/version detection |
+| **Container Analysis** | Trivy CVE scanning with CVSS score enrichment |
+| **Web Security** | OWASP ZAP baseline scan for OWASP Top 10 |
+| **Interactive Dashboard** | Chart.js visualizations, tabs, search & filters |
+| **Risk Scoring** | Weighted 0-100 risk score with severity breakdown |
+| **CVE Links** | Direct links to NVD for each CVE found |
+| **CI/CD Integration** | GitHub Actions with PR comments and artifacts |
+| **Multi-target** | Scan any URL with `--target https://example.com` |
+| **Report History** | Timestamped reports — full audit trail |
 
 ---
 
-## 🏗️ Architecture
+##  Architecture
 
 ```
 vulnerability-analysis-pipeline/
@@ -114,7 +114,7 @@ vulnerability-analysis-pipeline/
 
 ---
 
-## 🚀 Quick Start
+##  Quick Start
 
 ### Prerequisites
 
@@ -130,7 +130,7 @@ vulnerability-analysis-pipeline/
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/YOUR_USERNAME/vulnerability-analysis-pipeline.git
+git clone [https://github.com/Danielmedi9/AVAP.git]
 cd vulnerability-analysis-pipeline
 ```
 
@@ -138,13 +138,13 @@ cd vulnerability-analysis-pipeline
 
 The project includes launcher scripts that **automatically** create the virtual environment, install dependencies and show an interactive menu to choose the scan mode.
 
-#### 🪟 Windows (CMD)
+####  Windows (CMD)
 
 ```cmd
 run.bat
 ```
 
-#### 🐧 Linux / Mac / WSL / Git Bash
+####  Linux / Mac / WSL / Git Bash
 
 ```bash
 chmod +x run.sh   # only needed the first time
@@ -161,7 +161,7 @@ The launcher will:
 
 ```
 ════════════════════════════════════════════════════
-  🔐  VULNERABILITY ANALYSIS PIPELINE
+       VULNERABILITY ANALYSIS PIPELINE
 ════════════════════════════════════════════════════
 
   ¿Qué quieres escanear?
@@ -219,7 +219,7 @@ python main.py --target http://localhost:8080
 
 ---
 
-## 💻 Usage
+##  Usage
 
 ### Two execution modes
 
@@ -257,7 +257,7 @@ python main.py --target http://my-app.com --no-browser
 
 ```
 ════════════════════════════════════════════════════════
-  🔐  VULNERABILITY ANALYSIS PIPELINE
+       VULNERABILITY ANALYSIS PIPELINE
 ════════════════════════════════════════════════════════
   Modo   : Juice Shop (Docker)
   Target : http://localhost:3000
@@ -286,7 +286,7 @@ python main.py --target http://my-app.com --no-browser
 [14:08:32] [PARSER] ✓ ZAP: 12 alertas (2 altas, 6 medias)
 
 ════════════════════════════════════════════════════════
-  📊  RESUMEN DE HALLAZGOS
+        RESUMEN DE HALLAZGOS
 ════════════════════════════════════════════════════════
   Puertos abiertos  : 1
   CVEs Críticos     : 3
@@ -301,7 +301,7 @@ python main.py --target http://my-app.com --no-browser
 
 ---
 
-## 📊 Dashboard Preview
+##  Dashboard Preview
 
 The generated dashboard includes:
 
@@ -316,24 +316,24 @@ The generated dashboard includes:
 - **Top Vulnerable Packages Bar Chart** — Packages with most CVEs
 
 ### Detailed Findings (Tabbed Interface)
-- **🌐 Open Ports** — Port, state, service, version banner
-- **🐳 CVE Details** — CVE ID (linked to NVD), severity badge, CVSS score, package, installed version, fix version, title
-- **🕷️ Web Alerts** — Alert name, risk, confidence, instances, description
+- ** Open Ports** — Port, state, service, version banner
+- ** CVE Details** — CVE ID (linked to NVD), severity badge, CVSS score, package, installed version, fix version, title
+- ** Web Alerts** — Alert name, risk, confidence, instances, description
 
 ### Interactive Features
-- 🔍 **Search** — Filter any table in real-time
-- 🏷️ **Severity Filters** — Show only CRITICAL / HIGH / MEDIUM / LOW
-- 📑 **Tabs** — Switch between Nmap, Trivy and ZAP results
-- 🔗 **CVE Links** — Click any CVE to open NVD page
-- 💡 **Tooltips** — Hover on titles for full description
+-  **Search** — Filter any table in real-time
+-  **Severity Filters** — Show only CRITICAL / HIGH / MEDIUM / LOW
+-  **Tabs** — Switch between Nmap, Trivy and ZAP results
+-  **CVE Links** — Click any CVE to open NVD page
+-  **Tooltips** — Hover on titles for full description
 
 ---
 
-## 🔧 How It Works
+##    How It Works
 
-### Scanner Details
+###   Scanner Details
 
-#### 🔍 Nmap — Port Scanner
+####    Nmap — Port Scanner
 ```bash
 # What runs internally:
 docker run --rm --network vuln-lab_default \
@@ -345,7 +345,7 @@ docker run --rm --network vuln-lab_default \
 - `--open` → Show only open ports
 - Runs inside Docker on the same network as the target
 
-#### 🐳 Trivy — Container Scanner
+####    Trivy — Container Scanner
 ```bash
 # What runs internally:
 docker run --rm \
@@ -357,7 +357,7 @@ docker run --rm \
 - Detects CVEs in OS packages and application dependencies
 - Extracts CVSS scores from NVD, GHSA, RedHat sources
 
-#### 🕷️ OWASP ZAP — Web Scanner
+####    OWASP ZAP — Web Scanner
 ```bash
 # What runs internally:
 docker run --rm --network vuln-lab_default \
@@ -393,7 +393,7 @@ Risk Score (0-100) =
 
 ---
 
-## 🤖 CI/CD Integration
+##    CI/CD Integration
 
 ### GitHub Actions Workflow
 
@@ -446,7 +446,7 @@ When a Pull Request is opened, the bot automatically comments:
 
 ---
 
-## 🛠️ Tech Stack
+##    Tech Stack
 
 | Technology | Role | Why |
 |------------|------|-----|
@@ -461,7 +461,7 @@ When a Pull Request is opened, the bot automatically comments:
 
 ---
 
-## 📁 Report Structure
+##    Report Structure
 
 Each pipeline run creates a timestamped directory:
 
@@ -479,7 +479,7 @@ reports/
 
 ---
 
-## 🔒 Security Considerations
+##    Security Considerations
 
 - **No credentials stored** — All tools run with minimal permissions
 - **Docker socket access** — Required by Trivy; use with caution in production
@@ -489,7 +489,7 @@ reports/
 
 ---
 
-## 🚧 Troubleshooting
+##    Troubleshooting
 
 ### Docker not found
 ```bash
@@ -541,18 +541,7 @@ python main.py --skip-setup
 
 ---
 
-## 📈 Roadmap
-
-- [ ] **SARIF output** — Export results in SARIF format for GitHub Security tab
-- [ ] **Slack/Teams notifications** — Alert on critical findings
-- [ ] **Historical trending** — Track vulnerability count over time
-- [ ] **Custom scan profiles** — Configurable scan intensity
-- [ ] **PDF export** — Executive report in PDF format
-- [ ] **API mode** — REST API for integration with other tools
-
----
-
-## 🤝 Contributing
+##  Contributing
 
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
@@ -564,13 +553,13 @@ The CI/CD pipeline will automatically run a security scan on your PR.
 
 ---
 
-## 📄 License
+##    License
 
 This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
 
 ---
 
-## 👤 Author
+##    Author
 
 Built as a **DevSecOps portfolio project** demonstrating:
 - Security automation with Python
