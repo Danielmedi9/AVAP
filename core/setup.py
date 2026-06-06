@@ -3,7 +3,7 @@ import sys
 
 
 def start_environment() -> None:
-    print("[SETUP] Comprobando que Docker está activo...")
+    print("[SETUP] Checking that Docker is running...")
 
     result = subprocess.run(
         ["docker", "info"],
@@ -12,16 +12,16 @@ def start_environment() -> None:
     )
 
     if result.returncode != 0:
-        print("[ERROR] Docker no está activo. Arráncalo e inténtalo de nuevo.")
+        print("[ERROR] Docker is not running. Start Docker and try again.")
         sys.exit(1)
 
-    print("[SETUP] Docker activo")
-    print("[SETUP] Levantando servicios con docker compose...")
+    print("[SETUP] Docker is running")
+    print("[SETUP] Starting services with docker compose...")
 
     result = subprocess.run(["docker", "compose", "up", "-d"])
 
     if result.returncode != 0:
-        print("[ERROR] Falló 'docker compose up'. Revisa el docker-compose.yml.")
+        print("[ERROR] Failed to start services with 'docker compose up'. Check the docker-compose.yml file.")
         sys.exit(1)
 
-    print("[SETUP] Servicios levantados")
+    print("[SETUP] Services started")

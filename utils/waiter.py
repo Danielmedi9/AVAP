@@ -4,24 +4,24 @@ import requests
 from core.config import WAIT_RETRIES, WAIT_INTERVAL, REQUEST_TIMEOUT
 
 
-def wait_for_service(url: str, label: str = "servicio") -> bool:
-    print(f"[WAIT] Esperando a que {label} esté disponible en {url}...")
+def wait_for_service(url: str, label: str = "service") -> bool:
+    print(f"[WAIT] Waiting for {label} to be available at {url}...")
 
     for attempt in range(1, WAIT_RETRIES + 1):
         try:
             response = requests.get(url, timeout=REQUEST_TIMEOUT)
             if response.status_code == 200:
-                print(f"[WAIT] {label} listo ✓")
+                print(f"[WAIT] {label} ready ✓")
                 return True
         except requests.exceptions.ConnectionError:
             pass
         except requests.exceptions.Timeout:
             pass
         except requests.exceptions.RequestException as e:
-            print(f"[WAIT] Error inesperado en intento {attempt}: {e}")
+            print(f"[WAIT] Unexpected error on attempt {attempt}: {e}")
 
-        print(f"[WAIT] Intento {attempt}/{WAIT_RETRIES} — esperando {WAIT_INTERVAL}s...")
+        print(f"[WAIT] Attempt {attempt}/{WAIT_RETRIES} — waiting {WAIT_INTERVAL}s...")
         time.sleep(WAIT_INTERVAL)
 
-    print(f"[ERROR] {label} no disponible tras {WAIT_RETRIES} intentos.")
+    print(f"[ERROR] {label} not available after {WAIT_RETRIES} attempts.")
     return False

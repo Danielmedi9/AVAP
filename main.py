@@ -37,13 +37,13 @@ def main():
 
     else:
         print("\n" + "═" * 56)
-        print("     ERROR: Debes especificar un objetivo")
+        print("     ERROR: You must specify a target to scan")
         print("═" * 56)
         print()
-        print("  1) Escanear OWASP Juice Shop (entorno de prueba):")
+        print("  1) Scan OWASP Juice Shop (test environment):")
         print("     python main.py --juice-shop")
         print()
-        print("  2) Escanear un objetivo externo:")
+        print("  2) Scan an external target:")
         print("     python main.py --target http://mi-app.com")
         print()
         print("     python main.py --help")
@@ -53,12 +53,12 @@ def main():
     print_banner(args, target_url, use_juice_shop)
 
     if use_juice_shop:
-        log_section("SETUP — Levantando OWASP Juice Shop")
+        log_section("SETUP — Starting OWASP Juice Shop")
         start_environment()
     else:
-        log("MAIN", "Modo target externo — sin Docker Compose")
+        log("MAIN", "External target mode — no Docker Compose")
 
-    log_section("Comprobando disponibilidad del objetivo")
+    log_section("Checking availability of the target")
 
     if not wait_for_service(target_url, label="Target"):
         log_error("MAIN", f"El objetivo '{target_url}' no está disponible. Abortando.")
@@ -158,13 +158,13 @@ def _create_empty_trivy_report(report_dir: str):
 
 
 def print_banner(args, target_url: str, use_juice_shop: bool):
-    mode = "Juice Shop (Docker)" if use_juice_shop else "Target externo"
+    mode = "Juice Shop (Docker)" if use_juice_shop else "External target"
     print("\n" + "═" * 56)
-    print("      VULNERABILITY ANALYSIS PIPELINE")
+    print("      AVAP - VULNERABILITY ANALYSIS")
     print("═" * 56)
-    print(f"  Modo   : {mode}")
+    print(f"  Mode   : {mode}")
     print(f"  Target : {target_url}")
-    print(f"  Trivy  : {'imagen Docker' if use_juice_shop else 'omitido (no aplica)'}")
+    print(f"  Trivy  : {'Docker image' if use_juice_shop else 'skipped (not applicable)'}")
     print(f"  Browser: {'disabled' if args.no_browser else 'enabled'}")
     print("═" * 56 + "\n")
 
@@ -175,16 +175,16 @@ def print_summary(data: dict, report_dir: str):
     nmap  = data["nmap"]["count"]
 
     print("\n" + "═" * 56)
-    print("      RESUMEN DE HALLAZGOS")
+    print("      SUMMARY OF FINDINGS")
     print("═" * 56)
-    print(f"  Puertos abiertos  : {nmap}")
-    print(f"  CVEs Críticos     : {trivy.get('CRITICAL', 0)}")
-    print(f"  CVEs Altos        : {trivy.get('HIGH', 0)}")
-    print(f"  CVEs Medios       : {trivy.get('MEDIUM', 0)}")
-    print(f"  CVEs Bajos        : {trivy.get('LOW', 0)}")
-    print(f"  Alertas Web High  : {zap.get('High', 0)}")
-    print(f"  Alertas Web Medium: {zap.get('Medium', 0)}")
-    print(f"  Reportes en       : {report_dir}/")
+    print(f"  Open ports        : {nmap}")
+    print(f"  CVEs Critical     : {trivy.get('CRITICAL', 0)}")
+    print(f"  CVEs High         : {trivy.get('HIGH', 0)}")
+    print(f"  CVEs Medium       : {trivy.get('MEDIUM', 0)}")
+    print(f"  CVEs Low          : {trivy.get('LOW', 0)}")
+    print(f"  Web Alerts High   : {zap.get('High', 0)}")
+    print(f"  Web Alerts Medium : {zap.get('Medium', 0)}")
+    print(f"  Reports in        : {report_dir}/")
     print("═" * 56 + "\n")
 
 
