@@ -2,9 +2,9 @@
 
 <div align="center">
 
-![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=for-the-badge\&logo=python\&logoColor=white)
-![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge\&logo=docker\&logoColor=white)
-![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-2088FF?style=for-the-badge\&logo=github-actions\&logoColor=white)
+![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
+![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-2088FF?style=for-the-badge&logo=github-actions&logoColor=white)
 ![DevSecOps](https://img.shields.io/badge/DevSecOps-Security-red?style=for-the-badge)
 ![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
 
@@ -22,26 +22,25 @@ Generate automated security assessments, CVE analysis and interactive dashboards
 
 # Features
 
-* Automated vulnerability analysis pipeline
-* Docker-based isolated execution
-* Nmap port and service discovery
-* Trivy CVE container scanning
-* OWASP ZAP web vulnerability analysis
-* Interactive HTML dashboard
-* Risk scoring system
-* CVE enrichment with severity analysis
-* GitHub Actions CI/CD integration
-* Multi-target support
-* Timestamped reports
+- Automated vulnerability analysis pipeline
+- Docker-based isolated execution
+- Nmap port and service discovery
+- Trivy CVE container scanning
+- OWASP ZAP web vulnerability analysis
+- Interactive HTML dashboard
+- Risk scoring system
+- CVE enrichment with severity analysis
+- GitHub Actions CI/CD integration
+- Multi-target support
+- Timestamped reports
 
 ---
 
 # Dashboard Preview
 
-![Dashboard](docs\dash.png)
+![Dashboard](docs/dash.png)
 
-
-![Dashboard](docs\dash2.png)
+![Dashboard](docs/dash2.png)
 
 ---
 
@@ -144,6 +143,10 @@ chmod +x run.sh
 ./run.sh
 ```
 
+![Run](docs/run.png)
+
+![Run](docs/run2.png)
+
 ---
 
 ## Windows
@@ -164,9 +167,9 @@ python main.py --juice-shop
 
 Runs:
 
-* Nmap
-* Trivy
-* OWASP ZAP
+- Nmap
+- Trivy
+- OWASP ZAP
 
 ---
 
@@ -178,8 +181,8 @@ python main.py --target http://localhost:8080
 
 Runs:
 
-* Nmap
-* OWASP ZAP
+- Nmap
+- OWASP ZAP
 
 ---
 
@@ -202,11 +205,11 @@ reports/
 
 The CI/CD workflow automatically:
 
-* Executes scheduled security scans
-* Runs on push and pull requests
-* Generates downloadable artifacts
-* Publishes security reports
-* Automates DevSecOps validation
+- Executes scheduled security scans
+- Runs on push and pull requests
+- Generates downloadable artifacts
+- Publishes security reports
+- Automates DevSecOps validation
 
 Example workflow:
 
@@ -216,7 +219,7 @@ on:
   pull_request:
 
   schedule:
-    - cron: '0 7 * * *'
+    - cron: "0 7 * * *"
 ```
 
 ---
@@ -225,11 +228,11 @@ on:
 
 AVAP calculates a global risk score based on:
 
-* Critical CVEs
-* High severity findings
-* Web vulnerabilities
-* Open ports
-* Affected packages
+- Critical CVEs
+- High severity findings
+- Web vulnerabilities
+- Open ports
+- Affected packages
 
 Severity Levels:
 
@@ -260,13 +263,13 @@ Web application security testing focused on OWASP Top 10.
 
 # Future Improvements
 
-* Kubernetes security scanning
-* CVSS visualization
-* Multi-target orchestration
-* Slack / Discord notifications
-* PDF reporting
-* Cloud deployment support
-* SIEM integration
+- Kubernetes security scanning
+- CVSS visualization
+- Multi-target orchestration
+- Slack / Discord notifications
+- PDF reporting
+- Cloud deployment support
+- SIEM integration
 
 ---
 
@@ -274,13 +277,13 @@ Web application security testing focused on OWASP Top 10.
 
 This project was built to demonstrate practical skills in:
 
-* DevSecOps
-* Security automation
-* CI/CD pipelines
-* Docker orchestration
-* Vulnerability management
-* Python scripting
-* Security reporting
+- DevSecOps
+- Security automation
+- CI/CD pipelines
+- Docker orchestration
+- Vulnerability management
+- Python scripting
+- Security reporting
 
 ---
 
