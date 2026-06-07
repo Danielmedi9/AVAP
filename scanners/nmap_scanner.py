@@ -6,10 +6,10 @@ from core.config import DOCKER_NETWORK, get_docker_network
 
 
 def run_nmap(report_dir: str, target: str = "juice-shop") -> bool:
-    log("NMAP", f"Iniciando escaneo de puertos en '{target}'...")
+    log("NMAP", f"Starting port scan on '{target}'...")
 
     network = get_docker_network()
-    log("NMAP", f"Usando red Docker: {network}")
+    log("NMAP", f"Using Docker network: {network}")
 
     output_path = os.path.join(report_dir, "nmap.txt")
 
@@ -30,15 +30,15 @@ def run_nmap(report_dir: str, target: str = "juice-shop") -> bool:
             )
 
         if result.returncode != 0:
-            log_error("NMAP", f"El escaneo terminó con código de error {result.returncode}")
+            log_error("NMAP", f"Scan finished with error code {result.returncode}")
             return False
 
-        log_ok("NMAP", f"Escaneo completado - {output_path}")
+        log_ok("NMAP", f"Scan completed - {output_path}")
         return True
 
     except FileNotFoundError:
-        log_error("NMAP", "No se encontró el comando 'docker'")
+        log_error("NMAP", "Command 'docker' not found")
         return False
     except Exception as e:
-        log_error("NMAP", f"Error inesperado: {e}")
+        log_error("NMAP", f"Unexpected error: {e}")
         return False

@@ -30,11 +30,11 @@ def generate_dashboard(data: dict, output_path: str) -> bool:
         with open(output_path, "w", encoding="utf-8") as f:
             f.write(html)
 
-        log_ok("DASHBOARD", f"Dashboard generado → {output_path}")
+        log_ok("DASHBOARD", f"Dashboard generated → {output_path}")
         return True
 
     except Exception as e:
-        log_error("DASHBOARD", f"Error generando dashboard: {e}")
+        log_error("DASHBOARD", f"Error generating dashboard: {e}")
         return False
 
 
@@ -61,16 +61,16 @@ def _calculate_scoring(data: dict) -> dict:
 
     if total_score >= 75:
         level, color, bg_color = "CRITICAL", "#ef4444", "rgba(239,68,68,0.1)"
-        description = "Immediate action required. Critical vulnerabilities detected."
+        description = "Immediate action required. Critical vulnerabilities were found."
     elif total_score >= 50:
         level, color, bg_color = "HIGH", "#f97316", "rgba(249,115,22,0.1)"
-        description = "High risk environment. Prioritize remediation of critical findings."
+        description = "High-risk environment. Prioritize critical findings."
     elif total_score >= 25:
         level, color, bg_color = "MEDIUM", "#eab308", "rgba(234,179,8,0.1)"
         description = "Moderate risk. Address high severity findings promptly."
     else:
         level, color, bg_color = "LOW", "#22c55e", "rgba(34,197,94,0.1)"
-        description = "Low risk environment. Continue monitoring."
+        description = "Low risk. Continue monitoring."
 
     return {
         "total":       total_score,
@@ -82,9 +82,9 @@ def _calculate_scoring(data: dict) -> dict:
             "Critical CVEs":  score_trivy_critical,
             "High CVEs":      score_trivy_high,
             "Medium CVEs":    score_trivy_medium,
-            "Web High":       score_zap_high,
-            "Web Medium":     score_zap_medium,
-            "Open Ports":     score_nmap,
+            "High web":       score_zap_high,
+            "Medium web":     score_zap_medium,
+            "Open ports":     score_nmap,
         }
     }
 
@@ -162,6 +162,12 @@ def _build_trivy_rows(trivy_data: dict) -> str:
     rows = []
     for v in vulns[:100]:
         sev_class  = v["severity"].lower()
+        severity_label = {
+            "CRITICAL": "CRITICAL",
+            "HIGH":     "HIGH",
+            "MEDIUM":   "MEDIUM",
+            "LOW":      "LOW"
+        }.get(v["severity"].upper(), v["severity"])
         cvss_score = v.get("cvss_score")
 
         if cvss_score is not None:
@@ -174,7 +180,7 @@ def _build_trivy_rows(trivy_data: dict) -> str:
             else:
                 cvss_html = f'<span class="cvss-score cvss-low">{cvss_score}</span>'
         else:
-            cvss_html = '<span class="cvss-score cvss-na">N/A</span>'
+            cvss_html = '<span class="cvss-score cvss-na">ND</span>'
 
         cve_id = v["id"]
         if cve_id.startswith("CVE-"):
@@ -185,7 +191,7 @@ def _build_trivy_rows(trivy_data: dict) -> str:
         rows.append(
             f'<tr>'
             f'<td>{cve_link}</td>'
-            f'<td><span class="badge {sev_class}">{v["severity"]}</span></td>'
+            f'<td><span class="badge {sev_class}">{severity_label}</span></td>'
             f'<td>{cvss_html}</td>'
             f'<td><code class="pkg">{v["package"]}</code></td>'
             f'<td><code class="version-installed">{v["installed_version"]}</code></td>'
@@ -197,10 +203,9 @@ def _build_trivy_rows(trivy_data: dict) -> str:
     if len(vulns) > 100:
         rows.append(
             f'<tr><td colspan="7" class="more-row">'
-            f'⋯ and {len(vulns) - 100} more vulnerabilities — see trivy.json for complete list'
+            f'⋯ and {len(vulns) - 100} more vulnerabilities — check trivy.json for the full list'
             f'</td></tr>'
         )
-
     return "\n".join(rows)
 
 
@@ -213,10 +218,16 @@ def _build_zap_rows(zap_data: dict) -> str:
     rows = []
     for a in alerts:
         risk_class = a["risk"].lower()
+        risk_label = {
+            "HIGH":   "HIGH",
+            "MEDIUM": "MEDIUM",
+            "LOW":    "LOW",
+            "INFO":   "INFO"
+        }.get(a["risk"].upper(), a["risk"].upper())
         rows.append(
             f'<tr>'
             f'<td class="alert-name">{a["name"]}</td>'
-            f'<td><span class="badge {risk_class}">{a["risk"].upper()}</span></td>'
+            f'<td><span class="badge {risk_class}">{risk_label}</span></td>'
             f'<td><span class="confidence-badge">{a["confidence"]}</span></td>'
             f'<td class="count-cell">{a["count"]}</td>'
             f'<td class="desc-cell">{a["description"][:250]}</td>'
@@ -231,13 +242,19 @@ def _build_top_findings(trivy_data: dict, zap_data: dict) -> str:
     top_vulns = trivy_data.get("top_critical", [])[:3]
     for v in top_vulns:
         sev_class  = v["severity"].lower()
+        severity_label = {
+            "CRITICAL": "CRITICAL",
+            "HIGH":     "HIGH",
+            "MEDIUM":   "MEDIUM",
+            "LOW":      "LOW"
+        }.get(v["severity"].upper(), v["severity"])
         cvss_score = v.get("cvss_score")
-        cvss_str   = f"CVSS {cvss_score}" if cvss_score else v["severity"]
+        cvss_str   = f"CVSS {cvss_score}" if cvss_score else severity_label
         html_parts.append(f"""
         <div class="finding-item finding-{sev_class}">
             <div class="finding-header">
                 <span class="finding-id">{v['id']}</span>
-                <span class="badge {sev_class}">{v['severity']}</span>
+                <span class="badge {sev_class}">{severity_label}</span>
                 <span class="finding-cvss">{cvss_str}</span>
             </div>
             <div class="finding-title">{v['title'][:100]}</div>
@@ -294,7 +311,7 @@ def _build_html(timestamp, scoring, data, chart_data,
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vulnerability Analysis Report — {timestamp}</title>
+    <title>Vulnerability analysis report — {timestamp}</title>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
@@ -1000,7 +1017,7 @@ def _build_html(timestamp, scoring, data, chart_data,
 <div class="header">
     <div class="header-left">
         <h1>Vulnerability Analysis Report</h1>
-        <div class="subtitle">Automated Security Analysis</div>
+        <div class="subtitle">Automated security analysis</div>
     </div>
     <div class="header-right">
         <div class="timestamp">Generated: {timestamp}</div>
@@ -1017,7 +1034,7 @@ def _build_html(timestamp, scoring, data, chart_data,
     <div class="exec-grid">
 
         <div class="risk-score-card">
-            <div class="risk-label-top">Overall Risk Score</div>
+            <div class="risk-label-top">Overall risk score</div>
 
             <div class="gauge-container">
                 <div class="gauge-bg"></div>
@@ -1032,7 +1049,7 @@ def _build_html(timestamp, scoring, data, chart_data,
 
         <div class="metrics-row">
             <div class="metric-card">
-                <div class="m-label">Open Ports</div>
+                <div class="m-label">Open ports</div>
                 <div class="m-value c-blue">{nmap_count}</div>
                 <div class="m-sub">Attack surface</div>
             </div>
@@ -1047,7 +1064,7 @@ def _build_html(timestamp, scoring, data, chart_data,
                 <div class="m-sub">High priority</div>
             </div>
             <div class="metric-card">
-                <div class="m-label">Packages Affected</div>
+                <div class="m-label">Packages affected</div>
                 <div class="m-value c-purple">{data["trivy"].get("packages_affected", 0)}</div>
                 <div class="m-sub">Unique packages</div>
             </div>
@@ -1060,24 +1077,24 @@ def _build_html(timestamp, scoring, data, chart_data,
                 <div class="m-sub">All severities</div>
             </div>
             <div class="metric-card">
-                <div class="m-label">Web Alerts High</div>
+                <div class="m-label">High web alerts</div>
                 <div class="m-value c-high">{zap_counts.get('High', 0)}</div>
                 <div class="m-sub">OWASP ZAP</div>
             </div>
             <div class="metric-card">
-                <div class="m-label">Web Alerts Med</div>
+                <div class="m-label">Medium web alerts</div>
                 <div class="m-value c-medium">{zap_counts.get('Medium', 0)}</div>
                 <div class="m-sub">OWASP ZAP</div>
             </div>
             <div class="metric-card">
-                <div class="m-label">Total Web Alerts</div>
+                <div class="m-label">Total web alerts</div>
                 <div class="m-value c-info">{data["zap"]["total"]}</div>
                 <div class="m-sub">All risk levels</div>
             </div>
         </div>
 
         <div class="findings-card" style="grid-column: span 2;">
-            <h3>Critical Findings</h3>
+            <h3>Critical findings</h3>
             {top_findings_html}
         </div>
 
@@ -1085,26 +1102,26 @@ def _build_html(timestamp, scoring, data, chart_data,
 </div>
 
 <div class="section">
-    <div class="section-title">Security Metrics</div>
+    <div class="section-title">Security metrics</div>
 
     <div class="charts-grid">
 
         <div class="chart-card">
-            <h3>CVE Distribution (Trivy)</h3>
+            <h3>CVE distribution (Trivy)</h3>
             <div class="chart-container">
                 <canvas id="trivyDonut"></canvas>
             </div>
         </div>
 
         <div class="chart-card">
-            <h3>Web Alerts Distribution (ZAP)</h3>
+            <h3>Web alert distribution (ZAP)</h3>
             <div class="chart-container">
                 <canvas id="zapDonut"></canvas>
             </div>
         </div>
 
         <div class="chart-card">
-            <h3>Top Vulnerable Packages</h3>
+            <h3>Most vulnerable packages</h3>
             <div class="chart-container-bar">
                 <canvas id="packagesBar"></canvas>
             </div>
@@ -1114,21 +1131,21 @@ def _build_html(timestamp, scoring, data, chart_data,
 </div>
 
 <div class="section">
-    <div class="section-title">Detailed Findings</div>
+    <div class="section-title">Detailed findings</div>
 
     <div class="tabs-container">
 
         <div class="tabs-header">
             <button class="tab-btn active" onclick="switchTab('nmap', this)">
-                Open Ports
+                Open ports
                 <span class="tab-count">{nmap_count}</span>
             </button>
             <button class="tab-btn" onclick="switchTab('trivy', this)">
-                CVE Details
+                CVE details
                 <span class="tab-count">{data["trivy"]["total"]}</span>
             </button>
             <button class="tab-btn" onclick="switchTab('zap', this)">
-                Web Alerts
+                Web alerts
                 <span class="tab-count">{data["zap"]["total"]}</span>
             </button>
         </div>
@@ -1144,7 +1161,7 @@ def _build_html(timestamp, scoring, data, chart_data,
                     <thead>
                         <tr>
                             <th>Port</th>
-                            <th>State</th>
+                            <th>Status</th>
                             <th>Service</th>
                             <th>Version / Banner</th>
                         </tr>
@@ -1176,7 +1193,7 @@ def _build_html(timestamp, scoring, data, chart_data,
                             <th>CVSS</th>
                             <th>Package</th>
                             <th>Installed</th>
-                            <th>Fixed In</th>
+                            <th>Fixed in</th>
                             <th>Title</th>
                         </tr>
                     </thead>
@@ -1201,7 +1218,7 @@ def _build_html(timestamp, scoring, data, chart_data,
                 <table id="zap-table">
                     <thead>
                         <tr>
-                            <th>Alert Name</th>
+                            <th>Alert name</th>
                             <th>Risk</th>
                             <th>Confidence</th>
                             <th>Instances</th>
@@ -1221,7 +1238,7 @@ def _build_html(timestamp, scoring, data, chart_data,
 </div>
 
 <div class="footer">
-    <span>Vulnerability Analysis · {timestamp}</span>
+    <span>Vulnerability analysis · {timestamp}</span>
     <div class="footer-links">
         <a href="https://nmap.org" target="_blank">Nmap</a>
         <a href="https://trivy.dev" target="_blank">Trivy</a>

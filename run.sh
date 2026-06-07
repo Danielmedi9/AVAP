@@ -12,7 +12,7 @@ NC='\033[0m'
 
 echo ""
 echo -e "${BLUE}════════════════════════════════════════════════════${NC}"
-echo -e "${BLUE}        VULNERABILITY ANALYSIS PIPELINE${NC}"
+echo -e "${BLUE}        AVAP - VULNERABILITY ANALYSIS PIPELINE${NC}"
 echo -e "${BLUE}════════════════════════════════════════════════════${NC}"
 echo ""
 
@@ -21,25 +21,25 @@ if command -v python3 &>/dev/null; then
 elif command -v python &>/dev/null; then
     PYTHON=python
 else
-    echo -e "${RED}✗ Python no encontrado. Instala Python 3.11+ desde https://python.org${NC}"
+    echo -e "${RED}Python not found. Install Python 3.11+ from https://python.org${NC}"
     exit 1
 fi
-echo -e "${GREEN}✓ Python: $($PYTHON --version 2>&1)${NC}"
+echo -e "${GREEN}Python: $($PYTHON --version 2>&1)${NC}"
 
 if ! command -v docker &>/dev/null; then
-    echo -e "${RED}✗ Docker no encontrado. Instala Docker Desktop desde https://docker.com${NC}"
+    echo -e "${RED}Docker not found. Install Docker Desktop from https://docker.com${NC}"
     exit 1
 fi
 if ! docker info &>/dev/null 2>&1; then
-    echo -e "${RED}✗ Docker no está activo. Arranca Docker Desktop e inténtalo de nuevo.${NC}"
+    echo -e "${RED}Docker is not running. Start Docker Desktop and try again.${NC}"
     exit 1
 fi
-echo -e "${GREEN}✓ Docker activo${NC}"
+echo -e "${GREEN}Docker is running${NC}"
 
 if [ ! -d "venv" ]; then
-    echo -e "${YELLOW}→ Creando entorno virtual...${NC}"
+    echo -e "${YELLOW} Creating virtual environment...${NC}"
     $PYTHON -m venv venv
-    echo -e "${GREEN}✓ Entorno virtual creado${NC}"
+    echo -e "${GREEN}Virtual environment created${NC}"
 fi
 
 if [ -f "venv/Scripts/activate" ]; then
@@ -47,48 +47,48 @@ if [ -f "venv/Scripts/activate" ]; then
 elif [ -f "venv/bin/activate" ]; then
     source venv/bin/activate
 else
-    echo -e "${RED}✗ No se encontró el script de activación del venv.${NC}"
+    echo -e "${RED}Could not find the venv activation script.${NC}"
     exit 1
 fi
-echo -e "${GREEN}✓ Entorno virtual activado${NC}"
+echo -e "${GREEN}Virtual environment activated${NC}"
 
-echo -e "${YELLOW}→ Instalando dependencias...${NC}"
+echo -e "${YELLOW} Installing dependencies...${NC}"
 pip install -q --upgrade pip
 pip install -q -r requirements.txt
-echo -e "${GREEN}✓ Dependencias instaladas${NC}"
+echo -e "${GREEN}Dependencies installed${NC}"
 
 echo ""
 echo -e "${BLUE}════════════════════════════════════════════════════${NC}"
 echo ""
 
 if [ $# -gt 0 ]; then
-    echo -e "${CYAN}→ Ejecutando con argumentos: $@${NC}"
+    echo -e "${CYAN} Running with arguments: $@${NC}"
     echo ""
     python main.py "$@"
 else
-    echo -e "${BOLD}  ¿Qué quieres escanear?${NC}"
+    echo -e "${BOLD}  What do you want to scan?${NC}"
     echo ""
-    echo -e "  ${CYAN}1)${NC} OWASP Juice Shop ${YELLOW}(entorno de prueba Docker)${NC}"
-    echo -e "     Levanta Juice Shop automáticamente y lo escanea."
-    echo -e "     Incluye: Nmap + ZAP + Trivy"
+    echo -e "  ${CYAN}1)${NC} OWASP Juice Shop ${YELLOW}(Docker test environment)${NC}"
+    echo -e "     Starts Juice Shop automatically and scans it."
+    echo -e "     Includes: Nmap + ZAP + Trivy"
     echo ""
-    echo -e "  ${CYAN}2)${NC} Target externo ${YELLOW}(tu propia aplicación)${NC}"
-    echo -e "     Escanea una URL que ya esté en ejecución."
-    echo -e "     Incluye: Nmap + ZAP"
+    echo -e "  ${CYAN}2)${NC} External target ${YELLOW}(your own application)${NC}"
+    echo -e "     Scans a URL that is already running."
+    echo -e "     Includes: Nmap + ZAP"
     echo ""
-    echo -e "  ${CYAN}3)${NC} Salir"
+    echo -e "  ${CYAN}3)${NC} Exit"
     echo ""
-    echo -ne "  ${BOLD}Elige una opción [1/2/3]:${NC} "
+    echo -ne "  ${BOLD}Choose an option [1/2/3]:${NC} "
     read -r OPCION
 
     echo ""
 
     case "$OPCION" in
         1)
-            echo -e "${YELLOW}→ Modo: OWASP Juice Shop${NC}"
+            echo -e "${YELLOW} Mode: OWASP Juice Shop${NC}"
             echo ""
 
-            echo -ne "  ¿Abrir el dashboard en el navegador al finalizar? [S/n]: "
+            echo -ne "  Open the dashboard in the browser after finishing? [Y/n]: "
             read -r BROWSER
             BROWSER_FLAG=""
             if [[ "$BROWSER" =~ ^[Nn]$ ]]; then
@@ -100,17 +100,17 @@ else
             ;;
 
         2)
-            echo -e "${YELLOW}→ Modo: Target externo${NC}"
+            echo -e "${YELLOW} Mode: External target${NC}"
             echo ""
-            echo -ne "  Introduce la URL del objetivo (ej: http://localhost:8080): "
+            echo -ne "  Enter the target URL (e.g. http://localhost:8080): "
             read -r TARGET_URL
 
             if [ -z "$TARGET_URL" ]; then
-                echo -e "${RED}✗ URL vacía. Abortando.${NC}"
+                echo -e "${RED} Empty URL. Aborting.${NC}"
                 exit 1
             fi
 
-            echo -ne "  ¿Abrir el dashboard en el navegador al finalizar? [S/n]: "
+            echo -ne "  Open the dashboard in the browser after finishing? [Y/n]: "
             read -r BROWSER
             BROWSER_FLAG=""
             if [[ "$BROWSER" =~ ^[Nn]$ ]]; then
@@ -122,12 +122,12 @@ else
             ;;
 
         3)
-            echo -e "${YELLOW}Saliendo.${NC}"
+            echo -e "${YELLOW}Exiting.${NC}"
             exit 0
             ;;
 
         *)
-            echo -e "${RED}✗ Opción no válida. Ejecuta ./run.sh de nuevo.${NC}"
+            echo -e "${RED} Invalid option. Run ./run.sh again.${NC}"
             exit 1
             ;;
     esac

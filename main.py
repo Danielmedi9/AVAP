@@ -44,7 +44,7 @@ def main():
         print("     python main.py --juice-shop")
         print()
         print("  2) Scan an external target:")
-        print("     python main.py --target http://mi-app.com")
+        print("     python main.py --target http://example.com")
         print()
         print("     python main.py --help")
         print("═" * 56 + "\n")
@@ -56,18 +56,18 @@ def main():
         log_section("SETUP — Starting OWASP Juice Shop")
         start_environment()
     else:
-        log("MAIN", "External target mode — no Docker Compose")
+        log("MAIN", "External target mode — Docker Compose disabled")
 
-    log_section("Checking availability of the target")
+    log_section("Checking target availability")
 
     if not wait_for_service(target_url, label="Target"):
-        log_error("MAIN", f"El objetivo '{target_url}' no está disponible. Abortando.")
+        log_error("MAIN", f"The target '{target_url}' is not available. Aborting.")
         sys.exit(1)
 
     report_dir = create_report_dir()
-    log("MAIN", f"Guardando reportes en: {report_dir}")
+    log("MAIN", f"Saving reports to: {report_dir}")
 
-    log_section("Ejecutando escáneres de seguridad")
+    log_section("Running security scanners")
 
     run_nmap(report_dir, target=nmap_target)
     run_zap(report_dir, target_url=zap_target)
@@ -75,10 +75,10 @@ def main():
     if trivy_image:
         run_trivy(report_dir, image=trivy_image)
     else:
-        log("MAIN", "Trivy omitido — modo target externo")
+        log("MAIN", "Trivy skipped — external target mode")
         _create_empty_trivy_report(report_dir)
 
-    log_section("Procesando resultados")
+    log_section("Processing results")
 
     data = {
         "nmap":  parse_nmap(os.path.join(report_dir, "nmap.txt")),
@@ -86,13 +86,13 @@ def main():
         "zap":   parse_zap(os.path.join(report_dir, "zap.json")),
     }
 
-    log_section("Generando reporte")
+    log_section("Generating report")
 
     dashboard_path = os.path.join(report_dir, "dashboard.html")
     success = generate_dashboard(data, dashboard_path)
 
     if not success:
-        log_error("MAIN", "No se pudo generar el dashboard.")
+        log_error("MAIN", "Could not generate the dashboard.")
         sys.exit(1)
 
     print_summary(data, report_dir)
@@ -100,21 +100,21 @@ def main():
     if not args.no_browser:
         abs_path = os.path.abspath(dashboard_path)
         webbrowser.open(f"file://{abs_path}")
-        log_ok("MAIN", "Dashboard abierto en el navegador")
+        log_ok("MAIN", "Dashboard opened in browser")
 
-    log_section("PIPELINE COMPLETADO")
+    log_section("PIPELINE COMPLETED")
 
 
 def parse_arguments():
     parser = argparse.ArgumentParser(
-        description="Automated Vulnerability Analysis Pipeline",
+        description="Automated vulnerability analysis pipeline",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
-Ejemplos:
+Examples:
   python main.py --juice-shop
   python main.py --juice-shop --no-browser
   python main.py --target http://localhost:8080
-  python main.py --target http://mi-app.com --no-browser
+  python main.py --target http://example.com --no-browser
         """
     )
 
@@ -123,20 +123,20 @@ Ejemplos:
     group.add_argument(
         "--juice-shop",
         action="store_true",
-        help="Levantar OWASP Juice Shop con Docker y usarlo como objetivo"
+        help="Launch OWASP Juice Shop with Docker and use it as the target"
     )
 
     group.add_argument(
         "--target",
         default=None,
         metavar="URL",
-        help="URL del objetivo externo a escanear (ej: http://localhost:8080)"
+        help="External target URL to scan (e.g. http://localhost:8080)"
     )
 
     parser.add_argument(
         "--no-browser",
         action="store_true",
-        help="No abrir el dashboard en el navegador al finalizar"
+        help="Do not open the dashboard in the browser after completion"
     )
 
     return parser.parse_args()
@@ -154,7 +154,7 @@ def _create_empty_trivy_report(report_dir: str):
     path = os.path.join(report_dir, "trivy.json")
     with open(path, "w", encoding="utf-8") as f:
         json.dump(empty, f)
-    log("MAIN", "trivy.json vacío creado")
+    log("MAIN", "Created empty trivy.json")
 
 
 def print_banner(args, target_url: str, use_juice_shop: bool):
@@ -162,10 +162,10 @@ def print_banner(args, target_url: str, use_juice_shop: bool):
     print("\n" + "═" * 56)
     print("      AVAP - VULNERABILITY ANALYSIS")
     print("═" * 56)
-    print(f"  Mode   : {mode}")
-    print(f"  Target : {target_url}")
-    print(f"  Trivy  : {'Docker image' if use_juice_shop else 'skipped (not applicable)'}")
-    print(f"  Browser: {'disabled' if args.no_browser else 'enabled'}")
+    print(f"  Mode    : {mode}")
+    print(f"  Target  : {target_url}")
+    print(f"  Trivy   : {'Docker image' if use_juice_shop else 'skipped (not applicable)'}")
+    print(f"  Browser : {'disabled' if args.no_browser else 'enabled'}")
     print("═" * 56 + "\n")
 
 
@@ -175,16 +175,16 @@ def print_summary(data: dict, report_dir: str):
     nmap  = data["nmap"]["count"]
 
     print("\n" + "═" * 56)
-    print("      SUMMARY OF FINDINGS")
+    print("      FINDINGS SUMMARY")
     print("═" * 56)
-    print(f"  Open ports        : {nmap}")
-    print(f"  CVEs Critical     : {trivy.get('CRITICAL', 0)}")
-    print(f"  CVEs High         : {trivy.get('HIGH', 0)}")
-    print(f"  CVEs Medium       : {trivy.get('MEDIUM', 0)}")
-    print(f"  CVEs Low          : {trivy.get('LOW', 0)}")
-    print(f"  Web Alerts High   : {zap.get('High', 0)}")
-    print(f"  Web Alerts Medium : {zap.get('Medium', 0)}")
-    print(f"  Reports in        : {report_dir}/")
+    print(f"  Open ports             : {nmap}")
+    print(f"  Critical CVEs          : {trivy.get('CRITICAL', 0)}")
+    print(f"  High CVEs              : {trivy.get('HIGH', 0)}")
+    print(f"  Medium CVEs            : {trivy.get('MEDIUM', 0)}")
+    print(f"  Low CVEs               : {trivy.get('LOW', 0)}")
+    print(f"  High web alerts        : {zap.get('High', 0)}")
+    print(f"  Medium web alerts      : {zap.get('Medium', 0)}")
+    print(f"  Reports in             : {report_dir}/")
     print("═" * 56 + "\n")
 
 

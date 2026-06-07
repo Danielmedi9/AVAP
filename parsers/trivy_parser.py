@@ -51,7 +51,7 @@ def parse_trivy(path: str) -> dict:
         top_critical = vulnerabilities[:5]
         packages_affected = len(set(v["package"] for v in vulnerabilities))
 
-        log_ok("PARSER", f"Trivy: {total} vulnerabilidades ({counts['CRITICAL']} críticas, {packages_affected} paquetes afectados)")
+        log_ok("PARSER", f"Trivy: {total} vulnerabilities ({counts['CRITICAL']} critical, {packages_affected} packages affected)")
 
         return {
             "counts":            counts,
@@ -62,15 +62,15 @@ def parse_trivy(path: str) -> dict:
         }
 
     except FileNotFoundError:
-        log_error("PARSER", f"Archivo Trivy no encontrado: {path}")
+        log_error("PARSER", f"Trivy file not found: {path}")
         return {"counts": counts, "vulnerabilities": [], "total": 0, "top_critical": [], "packages_affected": 0}
 
     except json.JSONDecodeError as e:
-        log_error("PARSER", f"Error al leer JSON de Trivy: {e}")
+        log_error("PARSER", f"Error reading Trivy JSON: {e}")
         return {"counts": counts, "vulnerabilities": [], "total": 0, "top_critical": [], "packages_affected": 0}
 
     except Exception as e:
-        log_error("PARSER", f"Error inesperado parseando Trivy: {e}")
+        log_error("PARSER", f"Unexpected error parsing Trivy: {e}")
         return {"counts": counts, "vulnerabilities": [], "total": 0, "top_critical": [], "packages_affected": 0}
 
 

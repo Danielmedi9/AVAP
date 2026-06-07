@@ -8,10 +8,10 @@ from core.config import DOCKER_NETWORK, get_docker_network
 
 
 def run_zap(report_dir: str, target_url: str = "http://juice-shop:3000") -> bool:
-    log("ZAP", f"Iniciando escaneo web en '{target_url}'...")
+    log("ZAP", f"Starting web scan on '{target_url}'...")
 
     network = get_docker_network()
-    log("ZAP", f"Usando red Docker: {network}")
+    log("ZAP", f"Using Docker network: {network}")
 
     abs_report_dir = os.path.abspath(report_dir)
     docker_path = _normalize_path_for_docker(abs_report_dir)
@@ -39,24 +39,24 @@ def run_zap(report_dir: str, target_url: str = "http://juice-shop:3000") -> bool
         )
 
         if result.returncode not in (0, 2):
-            log_error("ZAP", f"Terminó con código inesperado: {result.returncode}")
+            log_error("ZAP", f"Finished with unexpected exit code: {result.returncode}")
             _ensure_zap_json(report_dir)
             return False
 
         if result.returncode == 2:
-            log_warning("ZAP", "Escaneo completado con alertas encontradas (normal)")
+            log_warning("ZAP", "Scan completed with alerts found (normal)")
         else:
-            log_ok("ZAP", "Escaneo completado sin alertas")
+            log_ok("ZAP", "Scan completed without alerts")
 
-        log_ok("ZAP", f"Reportes guardados en {report_dir}/")
+        log_ok("ZAP", f"Reports saved in {report_dir}/")
         return True
 
     except FileNotFoundError:
-        log_error("ZAP", "No se encontró el comando 'docker'")
+        log_error("ZAP", "Command 'docker' not found")
         _ensure_zap_json(report_dir)
         return False
     except Exception as e:
-        log_error("ZAP", f"Error inesperado: {e}")
+        log_error("ZAP", f"Unexpected error: {e}")
         _ensure_zap_json(report_dir)
         return False
 
@@ -67,7 +67,7 @@ def _ensure_zap_json(report_dir: str) -> None:
         empty = {"site": []}
         with open(zap_json_path, "w", encoding="utf-8") as f:
             json.dump(empty, f)
-        log_warning("ZAP", "zap.json vacío creado (ZAP no completó el escaneo)")
+        log_warning("ZAP", "Created empty zap.json (ZAP did not finish the scan)")
 
 
 def _normalize_path_for_docker(path: str) -> str:

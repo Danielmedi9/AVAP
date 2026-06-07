@@ -6,7 +6,7 @@ from core.config import DEFAULT_TARGET_IMAGE
 
 
 def run_trivy(report_dir: str, image: str = DEFAULT_TARGET_IMAGE) -> bool:
-    log("TRIVY", f"Analizando imagen Docker: '{image}'...")
+    log("TRIVY", f"Scanning Docker image: '{image}'...")
 
     json_output = os.path.join(report_dir, "trivy.json")
     txt_output  = os.path.join(report_dir, "trivy.txt")
@@ -40,8 +40,8 @@ def _run_trivy_scan(image: str, output_path: str, output_format: str) -> bool:
         return result.returncode == 0
 
     except FileNotFoundError:
-        log_error("TRIVY", "No se encontró el comando 'docker'")
+        log_error("TRIVY", "Command 'docker' not found")
         return False
     except Exception as e:
-        log_error("TRIVY", f"Error inesperado: {e}")
+        log_error("TRIVY", f"Unexpected error: {e}")
         return False

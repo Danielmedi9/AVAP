@@ -18,13 +18,13 @@ def parse_nmap(path: str) -> dict:
                         }
                         ports.append(port_entry)
 
-        log_ok("PARSER", f"Nmap: {len(ports)} puertos abiertos encontrados")
+        log_ok("PARSER", f"Nmap: {len(ports)} open ports found")
         return {"ports": ports, "count": len(ports)}
 
     except FileNotFoundError:
-        log_error("PARSER", f"Archivo Nmap no encontrado: {path}")
+        log_error("PARSER", f"Nmap file not found: {path}")
         return {"ports": [], "count": 0}
 
     except Exception as e:
-        log_error("PARSER", f"Error parseando Nmap: {e}")
+        log_error("PARSER", f"Error parsing Nmap: {e}")
         return {"ports": [], "count": 0}

@@ -42,20 +42,20 @@ def parse_zap(path: str) -> dict:
         alerts.sort(key=lambda a: risk_order.get(a["risk"], 4))
 
         total = sum(counts.values())
-        log_ok("PARSER", f"ZAP: {total} alertas ({counts['High']} altas, {counts['Medium']} medias)")
+        log_ok("PARSER", f"ZAP: {total} alerts ({counts['High']} high, {counts['Medium']} medium)")
 
         return {"counts": counts, "alerts": alerts, "total": total}
 
     except FileNotFoundError:
-        log_error("PARSER", f"Archivo ZAP no encontrado: {path}")
+        log_error("PARSER", f"ZAP file not found: {path}")
         return {"counts": counts, "alerts": [], "total": 0}
 
     except json.JSONDecodeError as e:
-        log_error("PARSER", f"Error al leer JSON de ZAP: {e}")
+        log_error("PARSER", f"Error reading ZAP JSON: {e}")
         return {"counts": counts, "alerts": [], "total": 0}
 
     except Exception as e:
-        log_error("PARSER", f"Error inesperado parseando ZAP: {e}")
+        log_error("PARSER", f"Unexpected error parsing ZAP: {e}")
         return {"counts": counts, "alerts": [], "total": 0}
 
 

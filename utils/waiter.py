@@ -5,7 +5,7 @@ from core.config import WAIT_RETRIES, WAIT_INTERVAL, REQUEST_TIMEOUT
 
 
 def wait_for_service(url: str, label: str = "service") -> bool:
-    print(f"[WAIT] Waiting for {label} to be available at {url}...")
+    print(f"[WAIT] Waiting for {label} to become available at {url}...")
 
     for attempt in range(1, WAIT_RETRIES + 1):
         try:
@@ -23,5 +23,5 @@ def wait_for_service(url: str, label: str = "service") -> bool:
         print(f"[WAIT] Attempt {attempt}/{WAIT_RETRIES} — waiting {WAIT_INTERVAL}s...")
         time.sleep(WAIT_INTERVAL)
 
-    print(f"[ERROR] {label} not available after {WAIT_RETRIES} attempts.")
+    print(f"[ERROR] {label} is not available after {WAIT_RETRIES} attempts.")
     return False

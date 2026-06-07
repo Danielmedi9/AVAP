@@ -38,19 +38,10 @@ Generate automated security assessments, CVE analysis and interactive dashboards
 
 # Dashboard Preview
 
-> Add your screenshots here
+![Dashboard](docs\dash.png)
 
-## Executive Summary
 
-![dashboard](docs/dashboard-overview.png)
-
-## CVE Analysis
-
-![dashboard](docs/dashboard-cves.png)
-
-## Risk Metrics
-
-![dashboard](docs/dashboard-risk.png)
+![Dashboard](docs\dash2.png)
 
 ---
 
