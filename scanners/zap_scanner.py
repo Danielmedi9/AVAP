@@ -11,6 +11,8 @@ def run_zap(report_dir: str, target_url: str = "http://juice-shop:3000") -> bool
     log("ZAP", f"Starting web scan on '{target_url}'...")
 
     network = get_docker_network()
+    if "localhost" in target_url or "127.0.0.1" in target_url:
+        network = "host"
     log("ZAP", f"Using Docker network: {network}")
 
     abs_report_dir = os.path.abspath(report_dir)

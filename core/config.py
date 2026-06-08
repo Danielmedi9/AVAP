@@ -1,7 +1,7 @@
 import subprocess
 import json
 
-DOCKER_NETWORK = "AVAP_default"
+DOCKER_NETWORK = "avap_avap"
 DEFAULT_TARGET_CONTAINER = "juice-shop"
 DEFAULT_TARGET_URL = "http://localhost:3000"
 DEFAULT_TARGET_IMAGE = "bkimminich/juice-shop"

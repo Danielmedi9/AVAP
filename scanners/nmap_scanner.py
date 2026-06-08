@@ -1,5 +1,6 @@
 import os
 import subprocess
+from urllib.parse import urlparse
 
 from utils.logger import log, log_ok, log_error
 from core.config import DOCKER_NETWORK, get_docker_network
@@ -9,6 +10,12 @@ def run_nmap(report_dir: str, target: str = "juice-shop") -> bool:
     log("NMAP", f"Starting port scan on '{target}'...")
 
     network = get_docker_network()
+
+    parsed = urlparse(target) 
+    host = parsed.hostname or target
+
+    if host in ("localhost", "127.0.0.1"):
+        network = "host"
     log("NMAP", f"Using Docker network: {network}")
 
     output_path = os.path.join(report_dir, "nmap.txt")
@@ -23,7 +30,7 @@ def run_nmap(report_dir: str, target: str = "juice-shop") -> bool:
                     "-sV",
                     "-p-",
                     "--open",
-                    target,
+                    host,
                 ],
                 stdout=f,
                 stderr=subprocess.STDOUT,

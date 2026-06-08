@@ -1,3 +1,5 @@
+name: avap
+
 services:
   juice-shop:
     image: bkimminich/juice-shop
@@ -6,8 +8,7 @@ services:
       - "3000:3000"
     restart: unless-stopped
     networks:
-      - AVAP
+      - avap
 
 networks:
-  AVAP:
-    name: AVAP_default
+  avap:
