@@ -2,16 +2,18 @@ import os
 import json
 import subprocess
 import platform
+from urllib.parse import urlparse
 
 from utils.logger import log, log_ok, log_error, log_warning
-from core.config import DOCKER_NETWORK, get_docker_network
+from core.config import DEFAULT_TARGET_CONTAINER, get_docker_network
 
 
 def run_zap(report_dir: str, target_url: str = "http://juice-shop:3000") -> bool:
     log("ZAP", f"Starting web scan on '{target_url}'...")
 
-    network = get_docker_network()
-    if "localhost" in target_url or "127.0.0.1" in target_url:
+    host = urlparse(target_url).hostname
+    network = get_docker_network() if host == DEFAULT_TARGET_CONTAINER else "bridge"
+    if host in ("localhost", "127.0.0.1", "::1"):
         network = "host"
     log("ZAP", f"Using Docker network: {network}")
 
@@ -37,7 +39,8 @@ def run_zap(report_dir: str, target_url: str = "http://juice-shop:3000") -> bool
                 "-w", "zap.md",
                 "-x", "zap.xml",
                 "-J", "zap.json",
-            ]
+            ],
+            timeout=3900,
         )
 
         if result.returncode not in (0, 2):
@@ -75,7 +78,4 @@ def _ensure_zap_json(report_dir: str) -> None:
 def _normalize_path_for_docker(path: str) -> str:
     if platform.system() == "Windows":
         path = path.replace("\\", "/")
-        if len(path) >= 2 and path[1] == ":":
-            drive_letter = path[0].lower()
-            path = f"/{drive_letter}{path[2:]}"
     return path

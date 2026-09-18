@@ -31,7 +31,7 @@ Generate automated security assessments, CVE analysis and interactive dashboards
 - Risk scoring system
 - CVE enrichment with severity analysis
 - GitHub Actions CI/CD integration
-- Multi-target support
+- Juice Shop and external URL modes
 - Timestamped reports
 
 ---
@@ -188,6 +188,13 @@ Runs:
 
 # Generated Reports
 
+The pipeline exits with an error if a scanner fails or a report cannot be read.
+Raw reports remain available for troubleshooting; incomplete assessments do not
+produce a risk dashboard. Trivy is intentionally skipped for external URLs.
+
+Scans of localhost use Docker host networking. Docker Desktop must have host
+networking enabled for this mode; the Juice Shop mode uses its own Compose network.
+
 Each execution creates a timestamped report directory:
 
 ```text
@@ -284,3 +291,22 @@ This project was built to demonstrate practical skills in:
 - Vulnerability management
 - Python scripting
 - Security reporting
+
+
+# Tests
+
+Run from the project directory after installing requirements:
+
+```bash
+python -m unittest discover -s tests -v
+```
+
+The tests cover report parsing, severity classification, HTML escaping, scanner
+failures, Docker command construction and the pipeline through dashboard generation.
+Docker calls are simulated so these tests do not scan any targets. A complete
+Juice Shop scan is still required to validate Docker and scanner compatibility
+on a particular machine:
+
+```bash
+python main.py --juice-shop --no-browser
+```

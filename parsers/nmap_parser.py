@@ -6,7 +6,10 @@ def parse_nmap(path: str) -> dict:
 
     try:
         with open(path, encoding="utf-8") as f:
-            for line in f:
+            content = f.read()
+            if not content.strip():
+                raise ValueError("Nmap report is empty")
+            for line in content.splitlines():
                 if "open" in line and ("/tcp" in line or "/udp" in line):
                     parts = line.strip().split()
                     if len(parts) >= 3:
@@ -23,8 +26,8 @@ def parse_nmap(path: str) -> dict:
 
     except FileNotFoundError:
         log_error("PARSER", f"Nmap file not found: {path}")
-        return {"ports": [], "count": 0}
+        return {"error": "Report missing or invalid", "ports": [], "count": 0}
 
     except Exception as e:
         log_error("PARSER", f"Error parsing Nmap: {e}")
-        return {"ports": [], "count": 0}
+        return {"error": "Report missing or invalid", "ports": [], "count": 0}

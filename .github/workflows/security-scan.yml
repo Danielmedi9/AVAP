@@ -50,122 +50,44 @@ jobs:
       - name: "Install Python dependencies"
         run: |
           python -m pip install --upgrade pip
-          pip install requests
+          pip install -r requirements.txt
 
       - name: "Verify Docker installation"
         run: |
           docker --version
           docker compose version
 
-      - name: "Start OWASP Juice Shop"
-        run: |
-          docker compose up -d
-          echo "Juice Shop container started"
-          docker ps
+      - name: "Run regression tests"
+        run: python -m unittest discover -s tests -v
 
-      - name: "Wait for Juice Shop to be ready"
+      - name: "Run assessment"
+        env:
+          TARGET_URL: ${{ inputs.target_url }}
         run: |
-          echo "Waiting for Juice Shop at http://localhost:3000..."
-          for i in $(seq 1 30); do
-            if curl -sf http://localhost:3000 > /dev/null 2>&1; then
-              echo "✓ Juice Shop is ready after ${i} attempts"
-              exit 0
-            fi
-            echo "Attempt ${i}/30 — waiting 5s..."
-            sleep 5
-          done
-          echo "✗ Juice Shop did not start in time"
-          docker logs juice-shop
-          exit 1
+          if [ -n "$TARGET_URL" ] && [ "$TARGET_URL" != "http://localhost:3000" ]; then
+            python main.py --target "$TARGET_URL" --no-browser
+          else
+            python main.py --juice-shop --no-browser
+          fi
 
-      - name: "Run Nmap port scan"
-        run: |
-          mkdir -p ${{ env.REPORTS_DIR }}/ci
-          docker run --rm \
-            --network avap_default \
-            instrumentisto/nmap \
-            -sV -p- --open juice-shop \
-            > ${{ env.REPORTS_DIR }}/ci/nmap.txt 2>&1 || true
-          echo "Nmap scan completed"
-          cat ${{ env.REPORTS_DIR }}/ci/nmap.txt
-
-      - name: "Run Trivy container scan"
-        run: |
-          docker run --rm \
-            -v /var/run/docker.sock:/var/run/docker.sock \
-            ghcr.io/aquasecurity/trivy:latest \
-            image \
-            --format json \
-            --no-progress \
-            bkimminich/juice-shop \
-            > ${{ env.REPORTS_DIR }}/ci/trivy.json 2>&1 || true
-          echo "Trivy scan completed"
-
-      - name: "Run OWASP ZAP baseline scan"
-        continue-on-error: true
-        run: |
-          docker run --rm \
-            --network avap_default \
-            -v $(pwd)/${{ env.REPORTS_DIR }}/ci:/zap/wrk \
-            ghcr.io/zaproxy/zaproxy:stable \
-            zap-baseline.py \
-            -t http://juice-shop:3000 \
-            -j \
-            -m 3 \
-            -T 30 \
-            -J zap.json \
-            -r zap.html \
-            -x zap.xml || true
-          echo "ZAP scan completed"
-
-      - name: "Generate security dashboard"
+      - name: "Export findings summary"
         run: |
           python - << 'EOF'
-          import os, sys
-          sys.path.insert(0, '.')
-
-          from parsers.nmap_parser  import parse_nmap
+          import os
+          from pathlib import Path
+          from parsers.nmap_parser import parse_nmap
           from parsers.trivy_parser import parse_trivy
-          from parsers.zap_parser   import parse_zap
-          from dashboard.generator  import generate_dashboard
+          from parsers.zap_parser import parse_zap
 
-          report_dir = "reports/ci"
-
-          data = {
-              "nmap":  parse_nmap(os.path.join(report_dir, "nmap.txt")),
-              "trivy": parse_trivy(os.path.join(report_dir, "trivy.json")),
-              "zap":   parse_zap(os.path.join(report_dir, "zap.json")),
-          }
-
-          dashboard_path = os.path.join(report_dir, "dashboard.html")
-          success = generate_dashboard(data, dashboard_path)
-
-          if success:
-              print(f"Dashboard generated: {dashboard_path}")
-          else:
-              print("Dashboard generation failed")
-              sys.exit(1)
-
-          trivy = data["trivy"]["counts"]
-          zap   = data["zap"]["counts"]
-          nmap  = data["nmap"]["count"]
-
-          print("\n" + "="*50)
-          print("SECURITY SCAN SUMMARY")
-          print("="*50)
-          print(f"Open Ports:       {nmap}")
-          print(f"Critical CVEs:    {trivy.get('CRITICAL', 0)}")
-          print(f"High CVEs:        {trivy.get('HIGH', 0)}")
-          print(f"Medium CVEs:      {trivy.get('MEDIUM', 0)}")
-          print(f"Web Alerts High:  {zap.get('High', 0)}")
-          print(f"Web Alerts Med:   {zap.get('Medium', 0)}")
-          print("="*50)
-
-          with open(os.environ.get('GITHUB_ENV', '/dev/null'), 'a') as f:
-              f.write(f"CRITICAL_CVES={trivy.get('CRITICAL', 0)}\n")
-              f.write(f"HIGH_CVES={trivy.get('HIGH', 0)}\n")
-              f.write(f"ZAP_HIGH={zap.get('High', 0)}\n")
-              f.write(f"OPEN_PORTS={nmap}\n")
+          report_dir = max(Path("reports").glob("*/dashboard.html"), key=lambda path: path.stat().st_mtime).parent
+          trivy = parse_trivy(report_dir / "trivy.json")["counts"]
+          zap = parse_zap(report_dir / "zap.json")["counts"]
+          nmap = parse_nmap(report_dir / "nmap.txt")["count"]
+          with open(os.environ["GITHUB_ENV"], "a") as stream:
+              stream.write(f"CRITICAL_CVES={trivy.get('CRITICAL', 0)}\n")
+              stream.write(f"HIGH_CVES={trivy.get('HIGH', 0)}\n")
+              stream.write(f"ZAP_HIGH={zap.get('High', 0)}\n")
+              stream.write(f"OPEN_PORTS={nmap}\n")
           EOF
 
       - name: "💬 Comment security summary on PR"
@@ -209,11 +131,11 @@ jobs:
         with:
           name: "security-reports-${{ github.run_number }}"
           path: |
-            reports/ci/dashboard.html
-            reports/ci/nmap.txt
-            reports/ci/trivy.json
-            reports/ci/zap.json
-            reports/ci/zap.html
+            reports/*/dashboard.html
+            reports/*/nmap.txt
+            reports/*/trivy.json
+            reports/*/zap.json
+            reports/*/zap.html
           retention-days: 30
 
       - name: "Cleanup Docker containers"

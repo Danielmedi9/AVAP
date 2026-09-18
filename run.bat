@@ -106,4 +106,5 @@ echo Exiting.
 exit /b 0
 
 :end
-endlocal
+set "AVAP_EXIT_CODE=%ERRORLEVEL%"
+endlocal & exit /b %AVAP_EXIT_CODE%

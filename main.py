@@ -69,14 +69,21 @@ def main():
 
     log_section("Running security scanners")
 
-    run_nmap(report_dir, target=nmap_target)
-    run_zap(report_dir, target_url=zap_target)
+    scan_results = {
+        "nmap": run_nmap(report_dir, target=nmap_target),
+        "zap": run_zap(report_dir, target_url=zap_target),
+    }
 
     if trivy_image:
-        run_trivy(report_dir, image=trivy_image)
+        scan_results["trivy"] = run_trivy(report_dir, image=trivy_image)
     else:
         log("MAIN", "Trivy skipped — external target mode")
         _create_empty_trivy_report(report_dir)
+
+    failed = [name for name, success in scan_results.items() if not success]
+    if failed:
+        log_error("MAIN", f"Incomplete assessment: {', '.join(failed)} failed. Raw reports: {report_dir}")
+        sys.exit(1)
 
     log_section("Processing results")
 

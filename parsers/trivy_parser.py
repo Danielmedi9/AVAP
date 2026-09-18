@@ -11,7 +11,9 @@ def parse_trivy(path: str) -> dict:
         with open(path, encoding="utf-8") as f:
             data = json.load(f)
 
-        results = data.get("Results", [])
+        if not isinstance(data, dict) or not isinstance(data.get("Results"), list):
+            raise ValueError("Trivy report must contain a Results list")
+        results = data["Results"]
 
         for result in results:
             vulns = result.get("Vulnerabilities") or []
@@ -63,15 +65,15 @@ def parse_trivy(path: str) -> dict:
 
     except FileNotFoundError:
         log_error("PARSER", f"Trivy file not found: {path}")
-        return {"counts": counts, "vulnerabilities": [], "total": 0, "top_critical": [], "packages_affected": 0}
+        return {"error": "Report missing or invalid", "counts": counts, "vulnerabilities": [], "total": 0, "top_critical": [], "packages_affected": 0}
 
     except json.JSONDecodeError as e:
         log_error("PARSER", f"Error reading Trivy JSON: {e}")
-        return {"counts": counts, "vulnerabilities": [], "total": 0, "top_critical": [], "packages_affected": 0}
+        return {"error": "Report missing or invalid", "counts": counts, "vulnerabilities": [], "total": 0, "top_critical": [], "packages_affected": 0}
 
     except Exception as e:
         log_error("PARSER", f"Unexpected error parsing Trivy: {e}")
-        return {"counts": counts, "vulnerabilities": [], "total": 0, "top_critical": [], "packages_affected": 0}
+        return {"error": "Report missing or invalid", "counts": counts, "vulnerabilities": [], "total": 0, "top_critical": [], "packages_affected": 0}
 
 
 def _extract_cvss(cvss_dict: dict) -> tuple:

@@ -1,10 +1,17 @@
 from datetime import datetime
+from html import escape
+import json
 from utils.logger import log_ok, log_error
 
 
 def generate_dashboard(data: dict, output_path: str) -> bool:
 
     try:
+        failed = [name for name, result in data.items() if result.get("error")]
+        if failed:
+            log_error("DASHBOARD", f"Cannot score incomplete reports: {', '.join(failed)}")
+            return False
+
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
         scoring = _calculate_scoring(data)
@@ -144,10 +151,10 @@ def _build_nmap_rows(nmap_data: dict) -> str:
     for p in nmap_data["ports"]:
         rows.append(
             f'<tr>'
-            f'<td><code class="port-code">{p["port"]}</code></td>'
+            f'<td><code class="port-code">{escape(str(p["port"]))}</code></td>'
             f'<td><span class="badge open">OPEN</span></td>'
-            f'<td>{p["service"]}</td>'
-            f'<td class="version-cell">{p["version"] or "—"}</td>'
+            f'<td>{escape(str(p["service"]))}</td>'
+            f'<td class="version-cell">{escape(str(p["version"] or "—"))}</td>'
             f'</tr>'
         )
     return "\n".join(rows)
@@ -172,38 +179,38 @@ def _build_trivy_rows(trivy_data: dict) -> str:
 
         if cvss_score is not None:
             if cvss_score >= 9.0:
-                cvss_html = f'<span class="cvss-score cvss-critical">{cvss_score}</span>'
+                cvss_html = f'<span class="cvss-score cvss-critical">{escape(str(cvss_score))}</span>'
             elif cvss_score >= 7.0:
-                cvss_html = f'<span class="cvss-score cvss-high">{cvss_score}</span>'
+                cvss_html = f'<span class="cvss-score cvss-high">{escape(str(cvss_score))}</span>'
             elif cvss_score >= 4.0:
-                cvss_html = f'<span class="cvss-score cvss-medium">{cvss_score}</span>'
+                cvss_html = f'<span class="cvss-score cvss-medium">{escape(str(cvss_score))}</span>'
             else:
-                cvss_html = f'<span class="cvss-score cvss-low">{cvss_score}</span>'
+                cvss_html = f'<span class="cvss-score cvss-low">{escape(str(cvss_score))}</span>'
         else:
             cvss_html = '<span class="cvss-score cvss-na">ND</span>'
 
         cve_id = v["id"]
         if cve_id.startswith("CVE-"):
-            cve_link = f'<a href="https://nvd.nist.gov/vuln/detail/{cve_id}" target="_blank" class="cve-link">{cve_id}</a>'
+            cve_link = f'<a href="https://nvd.nist.gov/vuln/detail/{escape(str(cve_id))}" target="_blank" class="cve-link">{escape(str(cve_id))}</a>'
         else:
-            cve_link = f'<code class="cve">{cve_id}</code>'
+            cve_link = f'<code class="cve">{escape(str(cve_id))}</code>'
 
         rows.append(
             f'<tr>'
             f'<td>{cve_link}</td>'
-            f'<td><span class="badge {sev_class}">{severity_label}</span></td>'
+            f'<td><span class="badge {escape(str(sev_class))}">{escape(str(severity_label))}</span></td>'
             f'<td>{cvss_html}</td>'
-            f'<td><code class="pkg">{v["package"]}</code></td>'
-            f'<td><code class="version-installed">{v["installed_version"]}</code></td>'
-            f'<td><code class="version-fixed">{v["fixed_version"]}</code></td>'
-            f'<td class="title-cell" title="{v["description"][:200]}">{v["title"][:80]}{"..." if len(v["title"]) > 80 else ""}</td>'
+            f'<td><code class="pkg">{escape(str(v["package"]))}</code></td>'
+            f'<td><code class="version-installed">{escape(str(v["installed_version"]))}</code></td>'
+            f'<td><code class="version-fixed">{escape(str(v["fixed_version"]))}</code></td>'
+            f'<td class="title-cell" title="{escape(str(v["description"][:200]))}">{escape(str(v["title"][:80]))}{escape(str("..." if len(v["title"]) > 80 else ""))}</td>'
             f'</tr>'
         )
 
     if len(vulns) > 100:
         rows.append(
             f'<tr><td colspan="7" class="more-row">'
-            f'⋯ and {len(vulns) - 100} more vulnerabilities — check trivy.json for the full list'
+            f'⋯ and {escape(str(len(vulns) - 100))} more vulnerabilities — check trivy.json for the full list'
             f'</td></tr>'
         )
     return "\n".join(rows)
@@ -226,11 +233,11 @@ def _build_zap_rows(zap_data: dict) -> str:
         }.get(a["risk"].upper(), a["risk"].upper())
         rows.append(
             f'<tr>'
-            f'<td class="alert-name">{a["name"]}</td>'
-            f'<td><span class="badge {risk_class}">{risk_label}</span></td>'
-            f'<td><span class="confidence-badge">{a["confidence"]}</span></td>'
-            f'<td class="count-cell">{a["count"]}</td>'
-            f'<td class="desc-cell">{a["description"][:250]}</td>'
+            f'<td class="alert-name">{escape(str(a["name"]))}</td>'
+            f'<td><span class="badge {escape(str(risk_class))}">{escape(str(risk_label))}</span></td>'
+            f'<td><span class="confidence-badge">{escape(str(a["confidence"]))}</span></td>'
+            f'<td class="count-cell">{escape(str(a["count"]))}</td>'
+            f'<td class="desc-cell">{escape(str(a["description"][:250]))}</td>'
             f'</tr>'
         )
     return "\n".join(rows)
@@ -249,30 +256,30 @@ def _build_top_findings(trivy_data: dict, zap_data: dict) -> str:
             "LOW":      "LOW"
         }.get(v["severity"].upper(), v["severity"])
         cvss_score = v.get("cvss_score")
-        cvss_str   = f"CVSS {cvss_score}" if cvss_score else severity_label
+        cvss_str   = f"CVSS {escape(str(cvss_score))}" if cvss_score else severity_label
         html_parts.append(f"""
-        <div class="finding-item finding-{sev_class}">
+        <div class="finding-item finding-{escape(str(sev_class))}">
             <div class="finding-header">
-                <span class="finding-id">{v['id']}</span>
-                <span class="badge {sev_class}">{severity_label}</span>
-                <span class="finding-cvss">{cvss_str}</span>
+                <span class="finding-id">{escape(str(v['id']))}</span>
+                <span class="badge {escape(str(sev_class))}">{escape(str(severity_label))}</span>
+                <span class="finding-cvss">{escape(str(cvss_str))}</span>
             </div>
-            <div class="finding-title">{v['title'][:100]}</div>
-            <div class="finding-meta">Package: <code>{v['package']}</code> {v['installed_version']} → fix: <code class="fix">{v['fixed_version']}</code></div>
+            <div class="finding-title">{escape(str(v['title'][:100]))}</div>
+            <div class="finding-meta">Package: <code>{escape(str(v['package']))}</code> {escape(str(v['installed_version']))} → fix: <code class="fix">{escape(str(v['fixed_version']))}</code></div>
         </div>""")
 
     top_alerts = zap_data.get("alerts", [])[:3]
     for a in top_alerts:
         risk_class = a["risk"].lower()
         html_parts.append(f"""
-        <div class="finding-item finding-{risk_class}">
+        <div class="finding-item finding-{escape(str(risk_class))}">
             <div class="finding-header">
                 <span class="finding-id">ZAP</span>
-                <span class="badge {risk_class}">{a['risk'].upper()}</span>
-                <span class="finding-cvss">Confidence: {a['confidence']}</span>
+                <span class="badge {escape(str(risk_class))}">{escape(str(a['risk'].upper()))}</span>
+                <span class="finding-cvss">Confidence: {escape(str(a['confidence']))}</span>
             </div>
-            <div class="finding-title">{a['name']}</div>
-            <div class="finding-meta">{a['description'][:120]}</div>
+            <div class="finding-title">{escape(str(a['name']))}</div>
+            <div class="finding-meta">{escape(str(a['description'][:120]))}</div>
         </div>""")
 
     if not html_parts:
@@ -291,18 +298,16 @@ def _build_html(timestamp, scoring, data, chart_data,
     risk_score   = scoring["total"]
     risk_level   = scoring["level"]
 
-    import json as _json
+    trivy_labels = _script_json(chart_data["trivy_donut"]["labels"])
+    trivy_values = _script_json(chart_data["trivy_donut"]["values"])
+    trivy_colors = _script_json(chart_data["trivy_donut"]["colors"])
 
-    trivy_labels = _json.dumps(chart_data["trivy_donut"]["labels"])
-    trivy_values = _json.dumps(chart_data["trivy_donut"]["values"])
-    trivy_colors = _json.dumps(chart_data["trivy_donut"]["colors"])
+    zap_labels = _script_json(chart_data["zap_donut"]["labels"])
+    zap_values = _script_json(chart_data["zap_donut"]["values"])
+    zap_colors = _script_json(chart_data["zap_donut"]["colors"])
 
-    zap_labels = _json.dumps(chart_data["zap_donut"]["labels"])
-    zap_values = _json.dumps(chart_data["zap_donut"]["values"])
-    zap_colors = _json.dumps(chart_data["zap_donut"]["colors"])
-
-    pkg_labels = _json.dumps(chart_data["packages_chart"]["labels"])
-    pkg_values = _json.dumps(chart_data["packages_chart"]["values"])
+    pkg_labels = _script_json(chart_data["packages_chart"]["labels"])
+    pkg_values = _script_json(chart_data["packages_chart"]["values"])
 
     gauge_rotation = int(risk_score * 1.8)
 
@@ -1440,3 +1445,7 @@ function filterBySeverity(tableId, severity, btn) {{
 
 </body>
 </html>"""
+
+
+def _script_json(value) -> str:
+    return json.dumps(value).replace("&", "\\u0026").replace("<", "\\u003c").replace(">", "\\u003e")

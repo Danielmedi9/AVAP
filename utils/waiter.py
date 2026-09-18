@@ -10,7 +10,7 @@ def wait_for_service(url: str, label: str = "service") -> bool:
     for attempt in range(1, WAIT_RETRIES + 1):
         try:
             response = requests.get(url, timeout=REQUEST_TIMEOUT)
-            if response.status_code == 200:
+            if 200 <= response.status_code < 500:
                 print(f"[WAIT] {label} ready ✓")
                 return True
         except requests.exceptions.ConnectionError:

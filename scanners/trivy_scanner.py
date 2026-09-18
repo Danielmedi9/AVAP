@@ -35,8 +35,12 @@ def _run_trivy_scan(image: str, output_path: str, output_format: str) -> bool:
                 ],
                 stdout=f,
                 stderr=subprocess.PIPE,
+                text=True,
+                timeout=900,
             )
 
+        if result.returncode != 0:
+            log_error("TRIVY", f"Scan failed ({result.returncode}): {result.stderr.strip()}")
         return result.returncode == 0
 
     except FileNotFoundError:
